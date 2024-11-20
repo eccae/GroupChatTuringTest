@@ -137,13 +137,24 @@ fun JoinInputDialog(
 }
 
 @Composable
-fun CreateRoomButton(modifier: Modifier = Modifier, callback: () -> Unit = {}) {
-    Button(onClick = callback,
+fun CreateRoomButton(mainViewModel: MainViewModel, modifier: Modifier = Modifier, callback: () -> Unit = {}) {
+    var showCreateRoomDialog by remember { mutableStateOf(false) }
+    Button(onClick = {showCreateRoomDialog=true},//onClick = callback,
         modifier = Modifier.padding(vertical = 20.dp))
     {
         Text(text = "Create room",
             modifier = Modifier.padding(vertical = 20.dp))
         Icon(imageVector = Icons.Default.AddCircleOutline, contentDescription = null)
+    }
+    if(showCreateRoomDialog)
+    {
+        CreateRoomDialog(
+            onDismiss = { showCreateRoomDialog = false },
+            onConfirm = { dataDict ->
+                showCreateRoomDialog = false
+                mainViewModel.saveRoomData(dataDict)
+                callback()
+            })
     }
 }
 
@@ -164,6 +175,56 @@ fun SettingsButton(mainViewModel: MainViewModel, modifier: Modifier = Modifier) 
             mainViewModel.saveUsername(name)
         })
     }
+}
+
+@Composable
+fun CreateRoomDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (Map<String, String>) -> Unit
+) {
+    var textNameState by remember { mutableStateOf(TextFieldValue("")) }
+    //TODO max player number, number of rounds etc
+
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        title = {
+            Text(text = "Provide name for Room")
+        },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                BasicTextField(
+                    value = textNameState,
+                    textStyle = TextStyle(color = Color.White),
+                    onValueChange = { textNameState = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    decorationBox = { innerTextField ->
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp)
+                        ) {
+                            if (textNameState.text.isEmpty()) {
+                                Text("Type room name here", style = TextStyle(color = Color.White))
+                            }
+                            innerTextField()
+                        }
+                    }
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = { onConfirm(mapOf("NAME" to textNameState.text)) }) {
+                Text(text = "Create")
+            }
+        },
+        dismissButton = {
+            Button(onClick = { onDismiss() }) {
+                Text(text = "Cancel")
+            }
+        }
+    )
 }
 
 @Composable
@@ -237,7 +298,7 @@ fun MainView(mainViewModel: MainViewModel) {
                 )
                 {
                     DisplayText("Turing Test\nbut in\nGroup Chat!")
-                    CreateRoomButton(callback = {state=1})
+                    CreateRoomButton(mainViewModel = mainViewModel, callback = {state=1}) //State has no effect now TODO
                     JoinByCodeButton(mainViewModel = mainViewModel)
                 }
             }
