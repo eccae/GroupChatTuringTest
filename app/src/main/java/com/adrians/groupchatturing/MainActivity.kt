@@ -326,8 +326,32 @@ fun MainView(mainViewModel: MainViewModel) {
                     Button(onClick = {state=0}) {
                         Text(text = "BACK")
                     }
+                    Button(onClick = {state=2}) {
+                        Text(text = "TEST CHAT")
+                    }
                 }
             }
         }
     }
+    else if(state == 2)
+    {
+        GroupChatTuringTheme {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+            )
+            {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                )
+                {
+                    Button(onClick = {state=0}) {
+                        Text(text = "BACK")
+                    }
+                    ChatScreen("", mainViewModel)
+                }
+            }
+        }
     }
+}

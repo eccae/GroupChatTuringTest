@@ -12,10 +12,17 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 
 private val TAG = "MyAppTag"
+
+data class Message(
+    val id: String = "",
+    val senderId: String = "",
+    val message: String = "",
+    val senderName: String = "")
+
 class Repository {
     private var userName : String = ""
     private var anonName : String = ""
-    private var userId: String = ""
+    private var userId: String = "11"
     private var roomData: Map<String,String> = emptyMap()
 
     private var socket = Socket()
