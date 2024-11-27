@@ -39,6 +39,11 @@ import com.adrians.groupchatturing.ui.theme.GroupChatTuringTheme
 
 //MVVM
 
+//TODO only for testing
+val usersTMP = listOf(User(userId = "11", userName = "Rel1", anonName = "Giraffe"),
+    User(userId = "21", userName = "Rel2", anonName = "Pig"),
+    User(userId = "31", userName = "Rel3", anonName = "Horse"))
+
 class MainActivity : ComponentActivity() {
     private val mainViewModel by viewModels<MainViewModel>()
 
@@ -276,6 +281,13 @@ fun SettingsDialog(
     )
 }
 
+/*
+* STATES
+* 0 - Menu (goes to 1)
+* 1 - Lobby (goes to 0, 1)
+* 2 - Chat (goes to 3, 0 on error)
+* 3 - Game summary (goes to 0, 2)
+* */
 //@Preview(showBackground = true)
 @Composable
 fun MainView(mainViewModel: MainViewModel) {
@@ -306,32 +318,33 @@ fun MainView(mainViewModel: MainViewModel) {
     }
     else if(state == 1)
     {
-        GroupChatTuringTheme {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-            )
-            {
-                SettingsButton(mainViewModel,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(5.dp)
-                )
-                Column (verticalArrangement=Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.align(Alignment.Center)//Modifier.fillMaxSize()
-                )
-                {
-                    DisplayText("You are now in lobby")
-                    Button(onClick = {state=0}) {
-                        Text(text = "BACK")
-                    }
-                    Button(onClick = {state=2}) {
-                        Text(text = "TEST CHAT")
-                    }
-                }
-            }
-        }
+        LobbyScreen(usersTMP, mainViewModel, stateCallback = { st -> state = st })
+//        GroupChatTuringTheme {
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxSize()
+//            )
+//            {
+//                SettingsButton(mainViewModel,
+//                    modifier = Modifier
+//                        .align(Alignment.TopEnd)
+//                        .padding(5.dp)
+//                )
+//                Column (verticalArrangement=Arrangement.Center,
+//                    horizontalAlignment = Alignment.CenterHorizontally,
+//                    modifier = Modifier.align(Alignment.Center)//Modifier.fillMaxSize()
+//                )
+//                {
+//                    DisplayText("You are now in lobby")
+//                    Button(onClick = {state=0}) {
+//                        Text(text = "BACK")
+//                    }
+//                    Button(onClick = {state=2}) {
+//                        Text(text = "TEST CHAT")
+//                    }
+//                }
+//            }
+//        }
     }
     else if(state == 2)
     {
@@ -346,12 +359,13 @@ fun MainView(mainViewModel: MainViewModel) {
                         .fillMaxSize()
                 )
                 {
-                    Button(onClick = {state=0}) {
-                        Text(text = "BACK")
-                    }
-                    ChatScreen("", mainViewModel)
+                    ChatScreen(mainViewModel, stateCallback = { st -> state = st })
                 }
             }
         }
+    }
+    else if(state == 3)
+    {
+        VotingTable(usersTMP, mainViewModel, stateCallback = { st -> state = st })
     }
 }

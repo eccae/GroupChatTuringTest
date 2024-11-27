@@ -18,7 +18,10 @@ data class Message(
     val senderId: String = "",
     val message: String = "",
     val senderName: String = "")
-
+data class User( //TO DO
+    val userId: String = "",
+    val userName: String = "",
+    val anonName: String = "")
 class Repository {
     private var userName : String = ""
     private var anonName : String = ""

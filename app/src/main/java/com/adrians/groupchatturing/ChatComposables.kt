@@ -18,6 +18,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -44,13 +45,16 @@ fun TEST_FUN(viewModel: MainViewModel) {
 }
 
 @Composable
-fun ChatScreen(channelId: String, viewModel: MainViewModel) {
+fun ChatScreen(viewModel: MainViewModel, stateCallback: (Int) -> Unit) {
     Scaffold {
         Column(modifier = Modifier
             .fillMaxSize()
             .padding(it)) {
             TEST_FUN(viewModel)
             val messages = viewModel.messages.collectAsState()
+            Button(onClick = {stateCallback(3)}) {
+                Text(text = "Debug go to summary")
+            }
             ChatMessages(
                 messages = messages.value,
                 activeUserId = viewModel.userId.collectAsState().value,
