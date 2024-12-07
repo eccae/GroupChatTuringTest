@@ -1,0 +1,377 @@
+package com.adrians.groupchatturing
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddCircleOutline
+import androidx.compose.material.icons.filled.DoubleArrow
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import com.adrians.groupchatturing.ui.theme.GroupChatTuringTheme
+
+
+@Composable
+fun MenuScreen(mainViewModel: MainViewModel, stateCallback: (Int) -> Unit)
+{
+    GroupChatTuringTheme {
+        Box(modifier = Modifier.fillMaxSize()) {
+    SettingsButton(mainViewModel,
+        modifier = Modifier
+            .align(Alignment.TopEnd)
+            .padding(5.dp)
+    )
+    Column (verticalArrangement=Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.align(Alignment.Center)//Modifier.fillMaxSize()
+    )
+    {
+        Text(
+            text = "Turing Test\nbut in\nGroup Chat!",
+            textAlign = TextAlign.Center
+        )
+        CreateRoomButton(mainViewModel = mainViewModel, callback = {stateCallback(1)}) //State has no effect now TODO
+        JoinByCodeButton(mainViewModel = mainViewModel)
+    } } }
+}
+@Composable
+fun JoinByCodeButton(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
+    var showDialog by remember { mutableStateOf(false) }
+    Button(onClick = { showDialog = true },
+        modifier = Modifier.padding(vertical = 20.dp)) {
+        Text(text = "Join by code",
+            modifier = Modifier.padding(vertical = 20.dp))
+        Icon(imageVector = Icons.Default.DoubleArrow, contentDescription = null)
+    }
+    if (showDialog) {
+        JoinInputDialog(
+            onDismiss = { showDialog = false },
+            onConfirm = { jc ->
+                showDialog = false
+                mainViewModel.getJoinCode(jc)
+            }
+        )
+    }
+}
+
+@Composable
+fun JoinInputDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit
+) {
+    var textState by remember { mutableStateOf(TextFieldValue("")) }
+
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        title = {
+            Text(text = "Enter Join Code")
+        },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                BasicTextField(
+                    value = textState,
+                    textStyle = TextStyle(color = Color.White),
+                    onValueChange = { textState = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    decorationBox = { innerTextField ->
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(8.dp)
+                        ) {
+                            if (textState.text.isEmpty()) {
+                                Text("Type code here", style = TextStyle(color = Color.White))//MaterialTheme.typography.bodyMedium,)
+                            }
+                            innerTextField()
+                        }
+                    }
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = { onConfirm(textState.text) }) {
+                Text(text = "Confirm")
+            }
+        },
+        dismissButton = {
+            Button(onClick = { onDismiss() }) {
+                Text(text = "Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+fun CreateRoomButton(mainViewModel: MainViewModel, modifier: Modifier = Modifier, callback: () -> Unit = {}) {
+    var showCreateRoomDialog by remember { mutableStateOf(false) }
+    Button(onClick = {showCreateRoomDialog=true},//onClick = callback,
+        modifier = Modifier.padding(vertical = 20.dp))
+    {
+        Text(text = "Create room",
+            modifier = Modifier.padding(vertical = 20.dp))
+        Icon(imageVector = Icons.Default.AddCircleOutline, contentDescription = null)
+    }
+    if(showCreateRoomDialog)
+    {
+        CreateRoomDialog(
+            onDismiss = { showCreateRoomDialog = false },
+            onConfirm = { dataDict ->
+                showCreateRoomDialog = false
+                mainViewModel.saveRoomData(dataDict)
+                //callback()
+            })
+    }
+}
+
+@Composable
+fun SettingsButton(mainViewModel: MainViewModel, modifier: Modifier = Modifier) {
+    var showDialog by remember { mutableStateOf(false) }
+    Button(onClick = { showDialog = true },
+        modifier = modifier)
+    {
+        Icon(imageVector = Icons.Default.Settings, contentDescription = null)
+    }
+    if (showDialog)
+    {
+        SettingsDialog(
+            onDismiss = { showDialog = false },
+            onConfirm = { name, port, ip ->
+                showDialog = false
+                mainViewModel.saveUsername(name)
+                mainViewModel.setServerIpV2R(ip)
+                mainViewModel.setServerPortV2R(port)
+            })
+    }
+}
+
+@Composable
+fun CreateRoomDialog(
+    onDismiss: () -> Unit,
+    onConfirm: (Map<String, Int>) -> Unit
+) {
+    //var roomNameState by remember { mutableStateOf(TextFieldValue("")) }
+    var maxRoundsNumber by remember { mutableStateOf(1) }
+    var maxPlayersNumber by remember { mutableStateOf(1) }
+
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        title = {
+            Text(text = "Create a Room")
+        },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+//                BasicTextField(
+//                    value = roomNameState,
+//                    textStyle = TextStyle(color = Color.White),
+//                    onValueChange = { roomNameState = it },
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(8.dp),
+//                    decorationBox = { innerTextField ->
+//                        Box(
+//                            Modifier
+//                                .fillMaxWidth()
+//                                .padding(8.dp)
+//                        ) {
+//                            if (roomNameState.text.isEmpty()) {
+//                                Text("Type room name here", style = TextStyle(color = Color.White))
+//                            }
+//                            innerTextField()
+//                        }
+//                    }
+//                )
+                Slider(
+                    value = maxRoundsNumber.toFloat(),
+                    onValueChange = { maxRoundsNumber = it.toInt() },
+                    valueRange = 1f..10f,
+                    steps = 8,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+                Text(text = "Max Rounds: $maxRoundsNumber")
+                Slider(
+                    value = maxPlayersNumber.toFloat(),
+                    onValueChange = { maxPlayersNumber = it.toInt() },
+                    valueRange = 2f..10f,
+                    steps = 7,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+                Text(text = "Max Players: $maxPlayersNumber")
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+                // onConfirm(mapOf("NAME" to roomNameState.text)) }) {
+                onConfirm(mapOf("maxUsers" to maxPlayersNumber, "roundsNumber" to maxRoundsNumber)) }) {
+                Text(text = "Create")
+            }
+        },
+        dismissButton = {
+            Button(onClick = { onDismiss() }) {
+                Text(text = "Cancel")
+            }
+        }
+    )
+}
+
+//@Composable
+//fun SettingsDialog(
+//    onDismiss: () -> Unit,
+//    onConfirm: (String) -> Unit
+//) {
+//    var textState by remember { mutableStateOf(TextFieldValue("")) }
+//
+//    AlertDialog(
+//        onDismissRequest = { onDismiss() },
+//        title = {
+//            Text(text = "Enter Your Name")
+//        },
+//        text = {
+//            Column(modifier = Modifier.fillMaxWidth()) {
+//                BasicTextField(
+//                    value = textState,
+//                    textStyle = TextStyle(color = Color.White),
+//                    onValueChange = { textState = it },
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(8.dp),
+//                    decorationBox = { innerTextField ->
+//                        Box(
+//                            Modifier
+//                                .fillMaxWidth()
+//                                .padding(8.dp)
+//                        ) {
+//                            if (textState.text.isEmpty()) {
+//                                Text("Type your name here", style = TextStyle(color = Color.White))
+//                            }
+//                            innerTextField()
+//                        }
+//                    }
+//                )
+//            }
+//        },
+//        confirmButton = {
+//            Button(onClick = { onConfirm(textState.text) }) {
+//                Text(text = "Confirm")
+//            }
+//        },
+//        dismissButton = {
+//            Button(onClick = { onDismiss() }) {
+//                Text(text = "Cancel")
+//            }
+//        }
+//    )
+//}
+
+@Composable
+fun SettingsDialog(onDismiss: () -> Unit, onConfirm: (String, String, String) -> Unit) {
+    var username by remember { mutableStateOf("User") }
+    var port by remember { mutableStateOf("12345") }
+    var ipAddress by remember { mutableStateOf("192.168.0.94") }
+
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        title = {
+            Text(text = "Settings & Debug")
+        },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = username,
+                    onValueChange = { username = it },
+                    label = { Text("Username") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = port,
+                    onValueChange = { port = it },
+                    label = { Text("Port") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedTextField(
+                    value = ipAddress,
+                    onValueChange = { ipAddress = it },
+                    label = { Text("IP Address") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(onClick = {
+                if (username.isNotBlank() && port.isNotBlank() && ipAddress.isNotBlank()) {
+                    onConfirm(username, port, ipAddress)
+                } else {
+                    println("Invalid input")
+                }
+            }) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            Button(onClick = { onDismiss() }) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+/*
+ErrorDialog(
+    onDismiss = { showErrorDialog = false },
+    msg = "No connection to the server"
+})
+ */
+@Composable
+fun ErrorDialog(
+    onDismiss: () -> Unit,
+    msg: String
+) {
+    AlertDialog(
+        onDismissRequest = { onDismiss() },
+        title = {
+            Text(text = "An error has occurred")
+        },
+        text = {
+            Text(msg, style = TextStyle(color = Color.White))//MaterialTheme.typography.bodyMedium,)
+        },
+        confirmButton = {
+            Button(onClick = { onDismiss() }) {
+                Text(text = "I understood")
+            }
+        },
+        dismissButton = {
+            Button(onClick = { onDismiss() }) {
+                Text(text = "I did not understood")
+            }
+        }
+    )
+}
