@@ -81,6 +81,10 @@ class WebSocketManager {
         eventListeners.remove(msgType)
     }
 
+    fun unregisterAllEventListeners() {
+        eventListeners.clear()
+    }
+
     fun closeConnection() {
         if (::webSocket.isInitialized) {
             webSocket.close(1000, "Client closing connection")

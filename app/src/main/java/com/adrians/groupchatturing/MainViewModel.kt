@@ -1,9 +1,12 @@
 package com.adrians.groupchatturing
 
 import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,14 +15,10 @@ import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
     private val repository = Repository()
-    private val _usernameData = MutableStateFlow("")
-    val usernameData = _usernameData.asStateFlow()
     private val _anonUsernameData = MutableStateFlow("")
     val anonUsernameData = _anonUsernameData.asStateFlow()
     private val _roomData = MutableStateFlow<Map<String, String>>(emptyMap())
     val roomData = _roomData.asStateFlow()
-    private val _userId = MutableStateFlow("11")
-    val userId = _userId.asStateFlow()
 
     private val _messages = MutableStateFlow<List<Message>>(emptyList())
     val messages: StateFlow<List<Message>> = _messages.asStateFlow()
@@ -27,17 +26,34 @@ class MainViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(0)
     val uiState = _uiState.asStateFlow()
 
+    private val _uiScoreboardState = MutableStateFlow(false)
+    val uiScoreboardState = _uiScoreboardState.asStateFlow()
+
     private val _lobbyId = MutableStateFlow(0)
     val lobbyId= _lobbyId.asStateFlow()
 
     private val _userName = MutableStateFlow("")
     val userName = _userName.asStateFlow()
 
+    private val _userId = MutableStateFlow(0)
+    val userId = _userId.asStateFlow()
+
     private val _isHost = MutableStateFlow(false)
     val isHost = _isHost.asStateFlow()
 
+    private val _roundDurationSec = MutableStateFlow(0)
+    val roundDurationSec = _roundDurationSec.asStateFlow()
+
+    private val _votingTimeSec = MutableStateFlow(0)
+    val votingTimeSec = _votingTimeSec.asStateFlow()
+
     private val _lobbyUserList = MutableStateFlow<List<String>>(emptyList())
     val lobbyUserList: StateFlow<List<String>> get() = _lobbyUserList
+
+    private val _chatMessagesList = MutableStateFlow<List<ChatMsg>>(emptyList())
+    val chatMessagesList: StateFlow<List<ChatMsg>> get() = _chatMessagesList
+    private val _scoreboardList = MutableStateFlow<List<UserScore>>(emptyList())
+    val scoreboardList: StateFlow<List<UserScore>> get() = _scoreboardList
 
     private val _isGameRunning = MutableStateFlow(false)
     val isGameRunning = _isGameRunning.asStateFlow()
@@ -46,9 +62,17 @@ class MainViewModel : ViewModel() {
     init {
         viewModelScope.launch {
             repository.events.collect { event ->
-                _lobbyId.update { repository.getLobbyId() }
+                _lobbyId.update { repository.getLobbyId }
                 handleRepositoryEvent(event)
             }
+        }
+    }
+
+    private fun addItemToScoresList(item: UserScore) {
+        viewModelScope.launch {
+            val updatedList = _scoreboardList.value.toMutableList()
+            updatedList.add(item)
+            _scoreboardList.emit(updatedList)
         }
     }
 
@@ -60,22 +84,86 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    private fun addItemToChatMessagesList(item: ChatMsg) {
+        viewModelScope.launch {
+            val updatedList = _chatMessagesList.value.toMutableList()
+            updatedList.add(item)
+            _chatMessagesList.emit(updatedList)
+        }
+    }
+
+    private fun startCountingCoroutine(num: MutableStateFlow<Int> )
+    {
+        CoroutineScope(Dispatchers.Default).launch {
+            while (num.value > 0) {
+                num.update{num.value - 1}
+                delay(1000L) // Pause for 1 second
+            }
+        }
+    }
+
     private fun handleRepositoryEvent(event: RepoEvent) {
         when (event) {
             is RepoEvent.ErrorOccurred -> Log.d(TAG, "ERROR occurred")
             is RepoEvent.UserRegistered -> {
                 Log.d(TAG, "User Registered")
-                _userName.update{repository.getUserName()}
+                _userName.update{repository.getUserName}
+                _userId.update { repository.getUserId }
             }
-            is RepoEvent.LobbyCreated -> {Log.d(TAG, "Captured lobby event")
+            is RepoEvent.LobbyCreated -> {
+                Log.d(TAG, "Captured lobby event")
                 _uiState.update{1}
-                _isHost.update{repository.getIsHost()}
+                _isHost.update{repository.getIsHost}
                 addItemToLobbyUserList(userName.value)
             }
             is RepoEvent.GameStarted -> {
                 Log.d(TAG, "Game started")
                 _isGameRunning.update{true}
+                _roundDurationSec.update{repository.getRoundDurationSec}
                 _uiState.update{2}
+                startCountingCoroutine(_roundDurationSec)
+
+            }
+            is RepoEvent.GameEnded -> {
+                Log.d(TAG, "Game ended, return to menu")
+                _uiState.update{0}
+            }
+            is RepoEvent.JoinedLobby -> {
+                Log.d(TAG, "Joined lobby as player")
+                _uiState.update{1}
+                _isHost.update{repository.getIsHost}
+                val allUsers = repository.getUserList
+                allUsers.forEach { user ->  addItemToLobbyUserList(user)}
+            }
+            is RepoEvent.NewChatMessage -> {
+                Log.d(TAG, "New chat message")
+                val allMessages = repository.getChatMessages
+                allMessages.forEach { msg ->  addItemToChatMessagesList(msg)}
+            }
+            is RepoEvent.NewRound -> {
+                Log.d(TAG, "New Round")
+                _roundDurationSec.update{repository.getRoundDurationSec}
+                _uiScoreboardState.update { false }
+                _uiState.update{2}
+                startCountingCoroutine(_roundDurationSec)
+            }
+            is RepoEvent.NewUserJoined -> {
+                Log.d(TAG, "New User")
+                val allUsers = repository.getUserList
+                allUsers.forEach { user ->  addItemToLobbyUserList(user)}
+            }
+            is RepoEvent.RoundEnded -> {
+                Log.d(TAG, "End of round after vote, display scoreboard")
+                val scores = repository.getScoreboardList
+                scores.forEach { score ->  addItemToScoresList(score)}
+                _uiScoreboardState.update { true }
+                //display summary
+            }
+            is RepoEvent.TimeToVote -> {
+                Log.d(TAG, "Chat ended, vote screen")
+                _votingTimeSec.update{repository.getVotingTimeSec}
+                _uiState.update{3}
+                startCountingCoroutine(_votingTimeSec)
             }
         }
     }
@@ -93,11 +181,6 @@ class MainViewModel : ViewModel() {
     {
         repository.setUsername(usrNam)
     }
-    fun getUsername()
-    {
-        val str = repository.fetchUsername()
-        _usernameData.update { str }
-    }
 
     fun saveAnonUsername()
     {
@@ -105,7 +188,7 @@ class MainViewModel : ViewModel() {
         _anonUsernameData.update { str }
     }
 
-    fun saveRoomData(dataDict: Map<String, Int>) {
+    fun saveRoomData(dataDict: MutableMap<String, Int>) {
         repository.createRoomReq(dataDict)
     }
 
@@ -120,7 +203,7 @@ class MainViewModel : ViewModel() {
 //    }
 
     fun postMessage(messageString: String) {
-        //TODO
+        repository.postNewMessageReq(messageString)
     }
 
     fun setServerIpV2R(ip: String) {
@@ -129,5 +212,9 @@ class MainViewModel : ViewModel() {
 
     fun setServerPortV2R(port: String) {
         repository.setServerPort(port)
+    }
+
+    fun vote(userId: Int) {
+        repository.sendVoteResp(userId.toString())
     }
 }

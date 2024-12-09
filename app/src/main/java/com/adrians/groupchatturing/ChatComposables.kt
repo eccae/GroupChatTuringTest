@@ -25,6 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -36,27 +37,29 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 
-fun TEST_FUN(viewModel: MainViewModel) {
-    Log.d("MyAppTag", "Added stupid messages")
-    val m1 = Message("1", "11", "I AM HUNGARY", "GoodLookingGentleman")
-    val m2 = Message("2", "21", "pls no caps", "JumpingLurker")
-    viewModel.addMessage(m1)
-    viewModel.addMessage(m2)
-}
+//fun TEST_FUN(viewModel: MainViewModel) {
+//    Log.d("MyAppTag", "Added stupid messages")
+//    val m1 = Message("1", "11", "I AM HUNGARY", "GoodLookingGentleman")
+//    val m2 = Message("2", "21", "pls no caps", "JumpingLurker")
+//    viewModel.addMessage(m1)
+//    viewModel.addMessage(m2)
+//}
 
 @Composable
-fun ChatScreen(viewModel: MainViewModel, stateCallback: (Int) -> Unit) {
+fun ChatScreen(viewModel: MainViewModel) {
+    val roundDurationSec by viewModel.roundDurationSec.collectAsState()
     Scaffold {
         Column(modifier = Modifier
             .fillMaxSize()
             .padding(it)) {
-            TEST_FUN(viewModel)
-            val messages = viewModel.messages.collectAsState()
-            Button(onClick = {stateCallback(3)}) {
-                Text(text = "Debug go to summary")
-            }
+//            TEST_FUN(viewModel)
+//            val messages = viewModel.messages.collectAsState()
+//            Button(onClick = {stateCallback(3)}) {
+//                Text(text = "Debug go to summary")
+//            }
+            Text(text = "Time left for discussion: $roundDurationSec")
             ChatMessages(
-                messages = messages.value,
+                viewModel = viewModel,
                 activeUserId = viewModel.userId.collectAsState().value,
                 onSendMessage = { messageString ->
                     viewModel.postMessage(messageString)
@@ -68,10 +71,11 @@ fun ChatScreen(viewModel: MainViewModel, stateCallback: (Int) -> Unit) {
 
 @Composable
 fun ChatMessages(
-    messages: List<Message>,
-    activeUserId: String,
+    viewModel: MainViewModel,
+    activeUserId: Int,
     onSendMessage: (String) -> Unit,
 ) {
+    val messagesList by viewModel.chatMessagesList.collectAsState()
     val hideKeyboardController = LocalSoftwareKeyboardController.current
 
     val msg = remember {
@@ -79,11 +83,10 @@ fun ChatMessages(
     }
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn {
-            items(messages) { message ->
+            items(messagesList) { message ->
                 ChatBubble(message = message, activeUserId = activeUserId)
             }
         }
-
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -113,8 +116,9 @@ fun ChatMessages(
 }
 
 @Composable
-fun ChatBubble(message: Message, activeUserId: String) {
-    val isCurrentUser = message.senderId == activeUserId
+fun ChatBubble(message: ChatMsg, activeUserId: Int) {
+    //TODO I NEED SENDER ID IN MSG val isCurrentUser = message.senderId == activeUserId
+    val isCurrentUser = false //TMP
     val bubbleColor = if (isCurrentUser) {
         Color.Blue
     } else {
@@ -133,7 +137,7 @@ fun ChatBubble(message: Message, activeUserId: String) {
             modifier = Modifier.align(alignment)
         ) {
             Text(
-                text = message.senderName,  fontSize = 10.sp,
+                text = message.senderUsername,  fontSize = 10.sp,
                 color = Color.White, modifier = Modifier.padding(0.dp)
             )
             Box(

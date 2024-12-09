@@ -22,6 +22,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -174,11 +175,11 @@ fun SettingsButton(mainViewModel: MainViewModel, modifier: Modifier = Modifier) 
 @Composable
 fun CreateRoomDialog(
     onDismiss: () -> Unit,
-    onConfirm: (Map<String, Int>) -> Unit
+    onConfirm: (MutableMap<String, Int>) -> Unit
 ) {
     //var roomNameState by remember { mutableStateOf(TextFieldValue("")) }
-    var maxRoundsNumber by remember { mutableStateOf(1) }
-    var maxPlayersNumber by remember { mutableStateOf(1) }
+    var maxRoundsNumber by remember { mutableIntStateOf(1) }
+    var maxPlayersNumber by remember { mutableIntStateOf(1) }
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
@@ -228,7 +229,7 @@ fun CreateRoomDialog(
         confirmButton = {
             Button(onClick = {
                 // onConfirm(mapOf("NAME" to roomNameState.text)) }) {
-                onConfirm(mapOf("maxUsers" to maxPlayersNumber, "roundsNumber" to maxRoundsNumber)) }) {
+                onConfirm(mutableMapOf("maxUsers" to maxPlayersNumber, "roundsNumber" to maxRoundsNumber)) }) {
                 Text(text = "Create")
             }
         },

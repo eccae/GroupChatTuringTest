@@ -11,9 +11,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.adrians.groupchatturing.ui.theme.GroupChatTuringTheme
 //import androidx.compose.ui.tooling.preview.Preview
@@ -57,32 +54,31 @@ class MainActivity : ComponentActivity() {
 fun MainView(mainViewModel: MainViewModel) {
     val state by mainViewModel.uiState.collectAsState()
 //    var state by remember { mutableIntStateOf(0) }
-    if (state == 0){
+    when (state) {
+        0 -> {
 //        MenuScreen(mainViewModel, stateCallback = { st -> state = st })
-        MenuScreen(mainViewModel, stateCallback = {})
-    }
-    else if(state == 1)
-    {
-        GroupChatTuringTheme {
-            //            LobbyScreen(usersTMP, mainViewModel, stateCallback = { st -> state = st })
-            LobbyScreen(usersTMP, mainViewModel, stateCallback = {})
+            MenuScreen(mainViewModel, stateCallback = {})
         }
-    }
-    else if(state == 2)
-    {
-        GroupChatTuringTheme {
-            Box(modifier = Modifier.fillMaxSize())
-            {
-//                ChatScreen(mainViewModel, stateCallback = { st -> state = st })
-                ChatScreen(mainViewModel, stateCallback = {})
+        1 -> {
+            GroupChatTuringTheme {
+                //            LobbyScreen(usersTMP, mainViewModel, stateCallback = { st -> state = st })
+                LobbyScreen(usersTMP, mainViewModel, stateCallback = {})
             }
         }
-    }
-    else if(state == 3)
-    {
-        GroupChatTuringTheme {
+        2 -> {
+            GroupChatTuringTheme {
+                Box(modifier = Modifier.fillMaxSize())
+                {
+//                ChatScreen(mainViewModel, stateCallback = { st -> state = st })
+                    ChatScreen(mainViewModel)
+                }
+            }
+        }
+        3 -> {
+            GroupChatTuringTheme {
 //            VotingTable(usersTMP, mainViewModel, stateCallback = { st -> state = st })
-            VotingTable(usersTMP, mainViewModel, stateCallback = {})
+                VotingTable(mainViewModel)
+            }
         }
     }
 }

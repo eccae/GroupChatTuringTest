@@ -27,11 +27,15 @@ import androidx.compose.ui.unit.sp
 //2st - summary, winner after X rounds, points of everyone (real usernames), back button (goes to menu, resets connection to server, in effect - deletes room)
 
 @Composable
-fun VotingTable(users: List<User>, viewModel: MainViewModel, stateCallback: (Int) -> Unit)
+fun VotingTable(viewModel: MainViewModel)
 {
-    var userId by remember { mutableStateOf<String>("") }
-    var showPopup by remember { mutableStateOf(false) }
+    var userId by remember { mutableIntStateOf(-1) }
+    val showPopup by viewModel.uiScoreboardState.collectAsState()
     var showNewLayout by remember { mutableStateOf(false) }
+
+    val votingTimeSec by viewModel.votingTimeSec.collectAsState()
+    //TODO anon list of users with user ids
+    val userList by viewModel.lobbyUserList.collectAsState() //TMP
     //TODO add value from server that will change when voting results come by
     Column(
         modifier = Modifier
@@ -40,12 +44,12 @@ fun VotingTable(users: List<User>, viewModel: MainViewModel, stateCallback: (Int
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = "Choose who is the imposter",
+            text = "Choose who is the imposter \n time to vote: $votingTimeSec",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
-        users.forEach { user ->
+        userList.forEach { user ->
             //TODO if user is client, then skip row
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -55,19 +59,19 @@ fun VotingTable(users: List<User>, viewModel: MainViewModel, stateCallback: (Int
                 //default values when userId == ""
                 var icon: ImageVector = Icons.Default.RadioButtonUnchecked
                 var isActive: Boolean = true
-                if(userId != "" && userId == user.userId) //user is the one that was voted for
+                if(userId != -1 && userId == 0)//user.userId) //user is the one that was voted for
                 {
                     icon = Icons.Default.RadioButtonChecked
                     isActive =  false
                 }
-                else if(userId != "")
+                else if(userId != -1)
                 {
                     isActive =  false
                 }
-                Text(text = user.anonName, fontSize = 18.sp)
+                Text(text = user, fontSize = 18.sp) //TODO user.anonName
                 IconButton(onClick = {
-                    userId = user.userId
-                    //And send to server TODO
+                    userId = 1 //TODO user.userId
+                    viewModel.vote(userId)
                     },
                     enabled = isActive
                 ) {
@@ -75,25 +79,26 @@ fun VotingTable(users: List<User>, viewModel: MainViewModel, stateCallback: (Int
                 }
             }
         }
-        if(userId != "")
+        if(userId != -1)
             Text(
                 text = "Waiting for all users to vote ...",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Thin,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
-        Button(onClick = {showPopup = true}){ Text(text = "Debug end vote")}
+//        Button(onClick = {showPopup = true}){ Text(text = "Debug end vote")}
         if (showPopup) {
-            SummaryDialog(users = users, onDismissCallback = {showPopup = false}, onConfirmCallback = {st -> showPopup = false;stateCallback(st) })
+            SummaryDialog(viewModel)
         }
     }
 }
 
 @Composable
-fun SummaryDialog(users: List<User>, onDismissCallback: () -> Unit, onConfirmCallback: (Int) -> Unit)
+fun SummaryDialog(viewModel : MainViewModel)
 {
+    val scores by viewModel.scoreboardList.collectAsState()
     AlertDialog(
-        onDismissRequest = { onDismissCallback() },
+        onDismissRequest = {  },
         title = { Text(text = "Vote Ended") },
         text = {
             Column(
@@ -101,18 +106,26 @@ fun SummaryDialog(users: List<User>, onDismissCallback: () -> Unit, onConfirmCal
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(text = "The real impostor was: \n")//TODO add name
-                Text(text = "Those people voted correctly (+1 point):")
-                users.forEach { user -> Text(text = "${user.userName}\n") }
+//                Text(text = "Those people voted correctly (+1 point):")
+                scores.forEach { score ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = "${score.username} : ${score.points}", fontSize = 18.sp)
+                    }
+                }
             }
-        }, //TODO add names
+        },
         confirmButton = {
-            Button(onClick = {
-                onConfirmCallback(0)
-                //TODO go to stuff
-                //TODO TMP stuff
-            }) {
-                Text(text = "Continue")
-            }
+//            Button(onClick = {
+//                onConfirmCallback(0)
+//                //TODO go to stuff
+//                //TODO TMP stuff
+//            }) {
+//                Text(text = "Continue")
+//            }
         }
     )
 }
