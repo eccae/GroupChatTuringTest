@@ -17,12 +17,6 @@ import com.adrians.groupchatturing.ui.theme.GroupChatTuringTheme
 
 //MVVM
 
-////TODO only for testing
-//val usersTMP = listOf(User(userId = "11", userName = "Rel1", anonName = "Giraffe"),
-//    User(userId = "21", userName = "Rel2", anonName = "Pig"),
-//    User(userId = "31", userName = "Rel3", anonName = "Horse"))
-
-
 class MainActivity : ComponentActivity() {
     private val mainViewModel by viewModels<MainViewModel>()
 
@@ -53,15 +47,12 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainView(mainViewModel: MainViewModel) {
     val state by mainViewModel.uiState.collectAsState()
-//    var state by remember { mutableIntStateOf(0) }
     when (state) {
         0 -> {
-//        MenuScreen(mainViewModel, stateCallback = { st -> state = st })
             MenuScreen(mainViewModel)
         }
         1 -> {
             GroupChatTuringTheme {
-                //            LobbyScreen(usersTMP, mainViewModel, stateCallback = { st -> state = st })
                 LobbyScreen(mainViewModel)
             }
         }
@@ -69,14 +60,12 @@ fun MainView(mainViewModel: MainViewModel) {
             GroupChatTuringTheme {
                 Box(modifier = Modifier.fillMaxSize())
                 {
-//                ChatScreen(mainViewModel, stateCallback = { st -> state = st })
                     ChatScreen(mainViewModel)
                 }
             }
         }
         3 -> {
             GroupChatTuringTheme {
-//            VotingTable(usersTMP, mainViewModel, stateCallback = { st -> state = st })
                 VotingTable(mainViewModel)
             }
         }

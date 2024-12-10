@@ -21,17 +21,6 @@ data class AnonUser(
     val userId: Int = 0,
     val nickName: String = "")
 
-//OUTDATED, REMOVE FROM CODE AND DELETE
-//data class Message(
-//    val id: String = "",
-//    val senderId: String = "",
-//    val message: String = "",
-//    val senderName: String = "")
-//data class User( //TO DO
-//    val userId: String = "",
-//    val userName: String = "",
-//    val anonName: String = "")
-
 sealed class RepoEvent {
     data class LobbyCreated(val data: Map<String,String>) : RepoEvent()
     data class UserRegistered(val data: String) : RepoEvent()
@@ -49,15 +38,12 @@ sealed class RepoEvent {
 //INFO
 //Naming convention - no  getter functions, when sending to server: sendXReq, setting fields: setX
 class Repository {
-//    private var anonName : String = ""
-    private var userId: Int = 0
-    val getUserId: Int
-        get() = userId
-    private lateinit var roomData: MutableMap<String,Int>
-
     private var serverPort = "12345"
     private var serverIp = "192.168.0.94"
     private var webSocketManager = WebSocketManager()
+
+    private lateinit var roomData: MutableMap<String,Int>
+    private var lobbyIdFromUserInput = 0 //Holds lobby Id provided by user in join lobby operation
 
     private var userName : String = ""
     val getUserName: String
@@ -65,8 +51,9 @@ class Repository {
     private var lobbyId = 0
     val getLobbyId: Int
         get() = lobbyId
-    private var lobbyIdFromUserInput = 0 //Holds lobby Id provided by user in join lobby operation
-
+    private var userId: Int = 0
+    val getUserId: Int
+        get() = userId
     private lateinit var userList: MutableList<String>
     val getUserList: MutableList<String>
         get() = userList
@@ -79,11 +66,9 @@ class Repository {
     private lateinit var anonUserList: MutableList<AnonUser>
     val getAnonUserList: MutableList<AnonUser>
         get() = anonUserList
-
     private var isHost = false
     val getIsHost: Boolean
         get() = isHost
-
     private var topic = ""
     val getTopic: String
         get() = topic
@@ -100,7 +85,6 @@ class Repository {
     val getCurrentBotNickname: String
         get() = currentBotNickname
 
-
     private val _events = MutableSharedFlow<RepoEvent>()
     val events: SharedFlow<RepoEvent> get() = _events
 
@@ -108,11 +92,6 @@ class Repository {
     {
         Log.d(TAG, "Repository init")
     }
-
-//    fun fetchAnonUsername(): String
-//    {
-//        return anonName
-//    }
 
     fun setUsername(usrNam: String)
     {
@@ -131,11 +110,6 @@ class Repository {
         serverPort = port
         Log.d(TAG, port)
     }
-
-//    fun setJoinCode(joinCode:String)
-//    {
-//        Log.d(TAG, "TODO when I got the JoinCode: $joinCode")
-//    }
 
     fun sendCreateRoomReq(dataDict: MutableMap<String, Int>) {
         roomData = dataDict
@@ -191,7 +165,6 @@ class Repository {
             Log.d(TAG,"Handling event_4: $json")
             lobbyId = json.get("lobbyId").asInt
             isHost = true
-            //Generate Event
             CoroutineScope(Dispatchers.IO).launch{ _events.emit(RepoEvent.LobbyCreated(mapOf("lobbyId" to lobbyId.toString()))) }
         }
 
@@ -294,13 +267,8 @@ class Repository {
             Log.d(TAG,"Handling event_18: $json")
             if(lobbyId == json.get("lobbyId").asInt) {
                 //Same as end game event?
-//                CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.("")) }
+                //CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.("")) }
             }
         }
     }
-
-//    fun fetchRoomData(): Map<String, String> {
-//        return roomData
-//    }
-
 }

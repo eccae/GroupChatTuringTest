@@ -14,14 +14,10 @@ import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
     private val repository = Repository()
-//    private val _anonUsernameData = MutableStateFlow("")
-//    val anonUsernameData = _anonUsernameData.asStateFlow()
+
     private val _roomData = MutableStateFlow<Map<String, String>>(emptyMap())
     val roomData = _roomData.asStateFlow()
 
-//    private val _messages = MutableStateFlow<List<Message>>(emptyList())
-//    val messages: StateFlow<List<Message>> = _messages.asStateFlow()
-//////////////////////////////////////////////////////////
     private val _uiState = MutableStateFlow(0)
     val uiState = _uiState.asStateFlow()
 
@@ -53,9 +49,6 @@ class MainViewModel : ViewModel() {
     val chatMessagesList: StateFlow<List<ChatMsg>> get() = _chatMessagesList
     private val _scoreboardList = MutableStateFlow<List<UserScore>>(emptyList())
     val scoreboardList: StateFlow<List<UserScore>> get() = _scoreboardList
-
-    private val _isGameRunning = MutableStateFlow(false)
-    val isGameRunning = _isGameRunning.asStateFlow()
 
     private val _currentBotNickname = MutableStateFlow("")
     val currentBotNickname = _currentBotNickname.asStateFlow()
@@ -131,12 +124,10 @@ class MainViewModel : ViewModel() {
             }
             is RepoEvent.GameStarted -> {
                 Log.d(TAG, "Game started")
-                _isGameRunning.update{true}
                 _roundDurationSec.update{repository.getRoundDurationSec}
                 _gameTopic.update { repository.getTopic }
                 _uiState.update{2}
                 startCountingCoroutine(_roundDurationSec)
-
             }
             is RepoEvent.GameEnded -> {
                 Log.d(TAG, "Game ended, return to menu")
@@ -173,7 +164,6 @@ class MainViewModel : ViewModel() {
                 scores.forEach { score ->  addItemToScoresList(score)}
                 _uiScoreboardState.update { true }
                 _currentBotNickname.update{repository.getCurrentBotNickname}
-                //display summary
             }
             is RepoEvent.TimeToVote -> {
                 Log.d(TAG, "Chat ended, vote screen")
@@ -185,27 +175,12 @@ class MainViewModel : ViewModel() {
         }
     }
 
-//    fun getJoinCode(joinCode:String)
-//    {
-//        repository.setJoinCode(joinCode)
-//    }
-
-//    fun addMessage(msg: Message) {
-//        _messages.value += msg
-//    }
-
-    fun saveUsername(usrNam:String)
+    fun setUsername(usrNam:String)
     {
         repository.setUsername(usrNam)
     }
 
-//    fun saveAnonUsername()
-//    {
-//        val str = repository.fetchAnonUsername()
-//        _anonUsernameData.update { str }
-//    }
-
-    fun saveRoomData(dataDict: MutableMap<String, Int>) {
+    fun setRoomDataAndCreateRoom(dataDict: MutableMap<String, Int>) {
         repository.sendCreateRoomReq(dataDict)
     }
 
@@ -216,11 +191,6 @@ class MainViewModel : ViewModel() {
     fun joinLobby(lobbyId : Int){
         repository.sendJoinRoomReq(lobbyId)
     }
-//    fun getRoomData()
-//    {
-//        val map = repository.fetchRoomData()
-//        _roomData.update { map }
-//    }
 
     fun postMessage(messageString: String) {
         repository.sendPostNewMessageReq(messageString)

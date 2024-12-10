@@ -1,8 +1,6 @@
 package com.adrians.groupchatturing
 
-import android.util.Log
 import androidx.compose.runtime.Composable
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,7 +16,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
@@ -36,15 +33,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-
-//fun TEST_FUN(viewModel: MainViewModel) {
-//    Log.d("MyAppTag", "Added stupid messages")
-//    val m1 = Message("1", "11", "I AM HUNGARY", "GoodLookingGentleman")
-//    val m2 = Message("2", "21", "pls no caps", "JumpingLurker")
-//    viewModel.addMessage(m1)
-//    viewModel.addMessage(m2)
-//}
-
 @Composable
 fun ChatScreen(viewModel: MainViewModel) {
     val roundDurationSec by viewModel.roundDurationSec.collectAsState()
@@ -53,11 +41,6 @@ fun ChatScreen(viewModel: MainViewModel) {
         Column(modifier = Modifier
             .fillMaxSize()
             .padding(it)) {
-//            TEST_FUN(viewModel)
-//            val messages = viewModel.messages.collectAsState()
-//            Button(onClick = {stateCallback(3)}) {
-//                Text(text = "Debug go to summary")
-//            }
             Text(text = "Time left for discussion: $roundDurationSec")
             Text(text = "Discussion Topic: $topic")
             ChatMessages(
@@ -79,10 +62,10 @@ fun ChatMessages(
 ) {
     val messagesList by viewModel.chatMessagesList.collectAsState()
     val hideKeyboardController = LocalSoftwareKeyboardController.current
-
     val msg = remember {
         mutableStateOf("")
     }
+
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn {
             items(messagesList) { message ->
@@ -129,7 +112,6 @@ fun ChatBubble(message: ChatMsg, activeUserId: Int) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp, horizontal = 8.dp)
-
     ) {
         val alignment = if (!isCurrentUser) Alignment.CenterStart else Alignment.CenterEnd
         Column(

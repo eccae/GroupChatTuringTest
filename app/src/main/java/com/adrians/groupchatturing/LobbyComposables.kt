@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -54,10 +53,6 @@ fun LobbyScreen(viewModel: MainViewModel)
             horizontalArrangement = Arrangement.spacedBy(34.dp) // Space between buttons
         )
         {
-//            Button(onClick = { stateCallback(0) /*TODO add leaving lobby with server confirm*/ }) {
-//                Text(text = "Leave Lobby")
-//                Icon(imageVector = Icons.AutoMirrored.Filled.Logout, contentDescription = null)
-//            }
             Button(onClick = { viewModel.startGame() }, enabled = isLobbyOwner) {
                 Text(text = "Start Game")
                 Icon(imageVector = Icons.Default.ChatBubble, contentDescription = null)

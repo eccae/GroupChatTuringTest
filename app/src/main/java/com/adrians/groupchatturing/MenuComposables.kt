@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
@@ -31,11 +30,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.adrians.groupchatturing.ui.theme.GroupChatTuringTheme
-
 
 @Composable
 fun MenuScreen(mainViewModel: MainViewModel)
@@ -118,7 +115,7 @@ fun JoinInputDialog(
 @Composable
 fun CreateRoomButton(mainViewModel: MainViewModel, modifier: Modifier = Modifier, callback: () -> Unit = {}) {
     var showCreateRoomDialog by remember { mutableStateOf(false) }
-    Button(onClick = {showCreateRoomDialog=true},//onClick = callback,
+    Button(onClick = {showCreateRoomDialog=true},
         modifier = Modifier.padding(vertical = 20.dp))
     {
         Text(text = "Create room",
@@ -131,7 +128,7 @@ fun CreateRoomButton(mainViewModel: MainViewModel, modifier: Modifier = Modifier
             onDismiss = { showCreateRoomDialog = false },
             onConfirm = { dataDict ->
                 showCreateRoomDialog = false
-                mainViewModel.saveRoomData(dataDict)
+                mainViewModel.setRoomDataAndCreateRoom(dataDict)
             })
     }
 }
@@ -150,7 +147,7 @@ fun SettingsButton(mainViewModel: MainViewModel, modifier: Modifier = Modifier) 
             onDismiss = { showDialog = false },
             onConfirm = { name, port, ip ->
                 showDialog = false
-                mainViewModel.saveUsername(name)
+                mainViewModel.setUsername(name)
                 mainViewModel.setServerIpV2R(ip)
                 mainViewModel.setServerPortV2R(port)
             })
@@ -162,7 +159,6 @@ fun CreateRoomDialog(
     onDismiss: () -> Unit,
     onConfirm: (MutableMap<String, Int>) -> Unit
 ) {
-    //var roomNameState by remember { mutableStateOf(TextFieldValue("")) }
     var maxRoundsNumber by remember { mutableIntStateOf(1) }
     var maxPlayersNumber by remember { mutableIntStateOf(1) }
 
@@ -173,26 +169,6 @@ fun CreateRoomDialog(
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
-//                BasicTextField(
-//                    value = roomNameState,
-//                    textStyle = TextStyle(color = Color.White),
-//                    onValueChange = { roomNameState = it },
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(8.dp),
-//                    decorationBox = { innerTextField ->
-//                        Box(
-//                            Modifier
-//                                .fillMaxWidth()
-//                                .padding(8.dp)
-//                        ) {
-//                            if (roomNameState.text.isEmpty()) {
-//                                Text("Type room name here", style = TextStyle(color = Color.White))
-//                            }
-//                            innerTextField()
-//                        }
-//                    }
-//                )
                 Slider(
                     value = maxRoundsNumber.toFloat(),
                     onValueChange = { maxRoundsNumber = it.toInt() },
@@ -213,7 +189,6 @@ fun CreateRoomDialog(
         },
         confirmButton = {
             Button(onClick = {
-                // onConfirm(mapOf("NAME" to roomNameState.text)) }) {
                 onConfirm(mutableMapOf("maxUsers" to maxPlayersNumber, "roundsNumber" to maxRoundsNumber)) }) {
                 Text(text = "Create")
             }
@@ -225,55 +200,6 @@ fun CreateRoomDialog(
         }
     )
 }
-
-//@Composable
-//fun SettingsDialog(
-//    onDismiss: () -> Unit,
-//    onConfirm: (String) -> Unit
-//) {
-//    var textState by remember { mutableStateOf(TextFieldValue("")) }
-//
-//    AlertDialog(
-//        onDismissRequest = { onDismiss() },
-//        title = {
-//            Text(text = "Enter Your Name")
-//        },
-//        text = {
-//            Column(modifier = Modifier.fillMaxWidth()) {
-//                BasicTextField(
-//                    value = textState,
-//                    textStyle = TextStyle(color = Color.White),
-//                    onValueChange = { textState = it },
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(8.dp),
-//                    decorationBox = { innerTextField ->
-//                        Box(
-//                            Modifier
-//                                .fillMaxWidth()
-//                                .padding(8.dp)
-//                        ) {
-//                            if (textState.text.isEmpty()) {
-//                                Text("Type your name here", style = TextStyle(color = Color.White))
-//                            }
-//                            innerTextField()
-//                        }
-//                    }
-//                )
-//            }
-//        },
-//        confirmButton = {
-//            Button(onClick = { onConfirm(textState.text) }) {
-//                Text(text = "Confirm")
-//            }
-//        },
-//        dismissButton = {
-//            Button(onClick = { onDismiss() }) {
-//                Text(text = "Cancel")
-//            }
-//        }
-//    )
-//}
 
 @Composable
 fun SettingsDialog(onDismiss: () -> Unit, onConfirm: (String, String, String) -> Unit) {
@@ -330,12 +256,6 @@ fun SettingsDialog(onDismiss: () -> Unit, onConfirm: (String, String, String) ->
     )
 }
 
-/*
-ErrorDialog(
-    onDismiss = { showErrorDialog = false },
-    msg = "No connection to the server"
-})
- */
 @Composable
 fun ErrorDialog(
     onDismiss: () -> Unit,
