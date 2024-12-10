@@ -38,7 +38,7 @@ import com.adrians.groupchatturing.ui.theme.GroupChatTuringTheme
 
 
 @Composable
-fun MenuScreen(mainViewModel: MainViewModel, stateCallback: (Int) -> Unit)
+fun MenuScreen(mainViewModel: MainViewModel)
 {
     GroupChatTuringTheme {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -56,7 +56,7 @@ fun MenuScreen(mainViewModel: MainViewModel, stateCallback: (Int) -> Unit)
             text = "Turing Test\nbut in\nGroup Chat!",
             textAlign = TextAlign.Center
         )
-        CreateRoomButton(mainViewModel = mainViewModel, callback = {stateCallback(1)}) //State has no effect now TODO
+        CreateRoomButton(mainViewModel = mainViewModel, callback = {})
         JoinByCodeButton(mainViewModel = mainViewModel)
     } } }
 }
@@ -74,7 +74,7 @@ fun JoinByCodeButton(modifier: Modifier = Modifier, mainViewModel: MainViewModel
             onDismiss = { showDialog = false },
             onConfirm = { jc ->
                 showDialog = false
-                mainViewModel.getJoinCode(jc)
+                mainViewModel.joinLobby(jc)
             }
         )
     }
@@ -83,10 +83,9 @@ fun JoinByCodeButton(modifier: Modifier = Modifier, mainViewModel: MainViewModel
 @Composable
 fun JoinInputDialog(
     onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit
+    onConfirm: (Int) -> Unit
 ) {
-    var textState by remember { mutableStateOf(TextFieldValue("")) }
-
+    var joinCode by remember { mutableStateOf("123") }
     AlertDialog(
         onDismissRequest = { onDismiss() },
         title = {
@@ -94,30 +93,17 @@ fun JoinInputDialog(
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
-                BasicTextField(
-                    value = textState,
-                    textStyle = TextStyle(color = Color.White),
-                    onValueChange = { textState = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    decorationBox = { innerTextField ->
-                        Box(
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(8.dp)
-                        ) {
-                            if (textState.text.isEmpty()) {
-                                Text("Type code here", style = TextStyle(color = Color.White))//MaterialTheme.typography.bodyMedium,)
-                            }
-                            innerTextField()
-                        }
-                    }
+                OutlinedTextField(
+                    value = joinCode,
+                    onValueChange = { joinCode = it },
+                    label = { Text("Join Code") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         },
         confirmButton = {
-            Button(onClick = { onConfirm(textState.text) }) {
+            Button(onClick = { onConfirm(joinCode.toInt()) }) {
                 Text(text = "Confirm")
             }
         },
@@ -146,7 +132,6 @@ fun CreateRoomButton(mainViewModel: MainViewModel, modifier: Modifier = Modifier
             onConfirm = { dataDict ->
                 showCreateRoomDialog = false
                 mainViewModel.saveRoomData(dataDict)
-                //callback()
             })
     }
 }

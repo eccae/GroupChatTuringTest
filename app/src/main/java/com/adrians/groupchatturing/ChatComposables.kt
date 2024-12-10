@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun ChatScreen(viewModel: MainViewModel) {
     val roundDurationSec by viewModel.roundDurationSec.collectAsState()
+    val topic by viewModel.gameTopic.collectAsState()
     Scaffold {
         Column(modifier = Modifier
             .fillMaxSize()
@@ -58,6 +59,7 @@ fun ChatScreen(viewModel: MainViewModel) {
 //                Text(text = "Debug go to summary")
 //            }
             Text(text = "Time left for discussion: $roundDurationSec")
+            Text(text = "Discussion Topic: $topic")
             ChatMessages(
                 viewModel = viewModel,
                 activeUserId = viewModel.userId.collectAsState().value,
@@ -117,8 +119,7 @@ fun ChatMessages(
 
 @Composable
 fun ChatBubble(message: ChatMsg, activeUserId: Int) {
-    //TODO I NEED SENDER ID IN MSG val isCurrentUser = message.senderId == activeUserId
-    val isCurrentUser = false //TMP
+    val isCurrentUser = message.senderId == activeUserId
     val bubbleColor = if (isCurrentUser) {
         Color.Blue
     } else {
@@ -137,7 +138,7 @@ fun ChatBubble(message: ChatMsg, activeUserId: Int) {
             modifier = Modifier.align(alignment)
         ) {
             Text(
-                text = message.senderUsername,  fontSize = 10.sp,
+                text = message.senderNickname,  fontSize = 10.sp,
                 color = Color.White, modifier = Modifier.padding(0.dp)
             )
             Box(

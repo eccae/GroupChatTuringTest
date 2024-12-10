@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun LobbyScreen(users: List<User>, viewModel: MainViewModel, stateCallback: (Int) -> Unit)
+fun LobbyScreen(viewModel: MainViewModel)
 {
     val lobbyName by viewModel.lobbyId.collectAsState()
     val userName by viewModel.userName.collectAsState()

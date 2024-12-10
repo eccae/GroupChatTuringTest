@@ -7,27 +7,30 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
-import kotlin.random.Random
 
 const val TAG = "MyLogTag"
 
 data class ChatMsg(
     val message: String = "",
-    val senderUsername: String = "")
+    val senderNickname: String = "",
+    val senderId: Int = 0)
 data class UserScore(
     val username: String = "",
     val points: Int = 0)
+data class AnonUser(
+    val userId: Int = 0,
+    val nickName: String = "")
 
 //OUTDATED, REMOVE FROM CODE AND DELETE
-data class Message(
-    val id: String = "",
-    val senderId: String = "",
-    val message: String = "",
-    val senderName: String = "")
-data class User( //TO DO
-    val userId: String = "",
-    val userName: String = "",
-    val anonName: String = "")
+//data class Message(
+//    val id: String = "",
+//    val senderId: String = "",
+//    val message: String = "",
+//    val senderName: String = "")
+//data class User( //TO DO
+//    val userId: String = "",
+//    val userName: String = "",
+//    val anonName: String = "")
 
 sealed class RepoEvent {
     data class LobbyCreated(val data: Map<String,String>) : RepoEvent()
@@ -43,10 +46,10 @@ sealed class RepoEvent {
     data object ErrorOccurred : RepoEvent()
 }
 
-//TODO Normalize naming: FetchX methods when asking a server, GetX when accessing fields
-//TODO Public getters instead of fun getX: val getX: Int get() = x // Getter for 'x'
+//INFO
+//Naming convention - no  getter functions, when sending to server: sendXReq, setting fields: setX
 class Repository {
-    private var anonName : String = ""
+//    private var anonName : String = ""
     private var userId: Int = 0
     val getUserId: Int
         get() = userId
@@ -73,6 +76,9 @@ class Repository {
     private lateinit var scoreboardList: MutableList<UserScore>
     val getScoreboardList: MutableList<UserScore>
         get() = scoreboardList
+    private lateinit var anonUserList: MutableList<AnonUser>
+    val getAnonUserList: MutableList<AnonUser>
+        get() = anonUserList
 
     private var isHost = false
     val getIsHost: Boolean
@@ -90,6 +96,10 @@ class Repository {
     private var votingTimeSec = 0
     val getVotingTimeSec: Int
         get() = votingTimeSec
+    private var currentBotNickname = ""
+    val getCurrentBotNickname: String
+        get() = currentBotNickname
+
 
     private val _events = MutableSharedFlow<RepoEvent>()
     val events: SharedFlow<RepoEvent> get() = _events
@@ -97,26 +107,12 @@ class Repository {
     init
     {
         Log.d(TAG, "Repository init")
-//        CoroutineScope(Dispatchers.IO).launch {
-//            val serverUrl ="ws://${serverIp}:${serverPort}" // WebSocket server URL
-//
-//            webSocketManager.connect(serverUrl)
-//            webSocketManager.sendMessage("Hello, WebSocket!")
-//            webSocketManager.closeConnection()
-//        }
     }
 
-    fun fetchAnonUsername(): String
-    {
-        return anonName
-    }
-
-    fun generateAnonUsername(): String
-    {
-        val randNum = (Random.nextInt(1000, 9999)).toString()
-        anonName = "User$randNum"
-        return anonName
-    }
+//    fun fetchAnonUsername(): String
+//    {
+//        return anonName
+//    }
 
     fun setUsername(usrNam: String)
     {
@@ -136,12 +132,12 @@ class Repository {
         Log.d(TAG, port)
     }
 
-    fun setJoinCode(joinCode:String)
-    {
-        Log.d(TAG, "TODO when I got the JoinCode: $joinCode")
-    }
+//    fun setJoinCode(joinCode:String)
+//    {
+//        Log.d(TAG, "TODO when I got the JoinCode: $joinCode")
+//    }
 
-    fun createRoomReq(dataDict: MutableMap<String, Int>) {
+    fun sendCreateRoomReq(dataDict: MutableMap<String, Int>) {
         roomData = dataDict
         val serverUrl ="ws://${serverIp}:${serverPort}"
 
@@ -151,12 +147,12 @@ class Repository {
         webSocketManager.sendMessage("""{"msgType": 1, "username": "$userName"}""")
     }
 
-    fun joinRoomReq(lobbyId : Int) {
+    fun sendJoinRoomReq(lobbyId : Int) {
         lobbyIdFromUserInput = lobbyId
         webSocketManager.sendMessage("""{"msgType": 1, "username": "$userName"}""")
     }
 
-    fun postNewMessageReq(chatMessage : String)
+    fun sendPostNewMessageReq(chatMessage : String)
     {
         webSocketManager.sendMessage("""{"msgType": 10, "clientId": $userId, "lobbyId": $lobbyId, "chatMsg": "$chatMessage"}""")
     }
@@ -166,7 +162,7 @@ class Repository {
         webSocketManager.sendMessage("""{"msgType": 13, "clientId": $userId, "lobbyId": $lobbyId, "chatbotNickname": "$votedNickname"}""")
     }
 
-    fun startGameReq()
+    fun sendStartGameReq()
     {
         if(!isHost) return
         webSocketManager.sendMessage("""{"msgType": 16, "clientId": $userId, "lobbyId": $lobbyId}""")
@@ -246,7 +242,7 @@ class Repository {
         webSocketManager.registerEventListener(11) { json ->
             Log.d(TAG,"Handling event_11: $json")
             if(lobbyId == json.get("lobbyId").asInt) {
-                chatMessages.add(ChatMsg(json.get("chatMsg").asString,json.get("senderUsername").asString))
+                chatMessages.add(ChatMsg(json.get("chatMsg").asString,json.get("senderNickname").asString,json.get("senderId").asInt))
                 CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.NewChatMessage("")) }
             }
         }
@@ -256,6 +252,9 @@ class Repository {
             Log.d(TAG,"Handling event_12: $json")
             if(lobbyId == json.get("lobbyId").asInt) {
                 votingTimeSec = json.get("votingTimeSec").asInt
+                anonUserList = json.getAsJsonObject("usersNicknames").entrySet().map { entry ->
+                    AnonUser(userId = entry.key.toInt(), nickName = entry.value.asString)
+                }.toMutableList()
                 CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.TimeToVote("")) }
             }
         }
@@ -267,6 +266,7 @@ class Repository {
                 scoreboardList = json.getAsJsonObject("scoreboard").entrySet().map { entry ->
                     UserScore(username = entry.key, points = entry.value.asInt)
                 }.toMutableList()
+                currentBotNickname = json.get("chatbotNickname").asString
                 CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.RoundEnded("")) }
             }
         }

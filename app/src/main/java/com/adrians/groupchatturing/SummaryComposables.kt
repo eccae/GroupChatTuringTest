@@ -29,14 +29,13 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun VotingTable(viewModel: MainViewModel)
 {
-    var userId by remember { mutableIntStateOf(-1) }
+    var votedUserNickname by remember { mutableStateOf("") }
     val showPopup by viewModel.uiScoreboardState.collectAsState()
-    var showNewLayout by remember { mutableStateOf(false) }
+//    var showNewLayout by remember { mutableStateOf(false) }
 
     val votingTimeSec by viewModel.votingTimeSec.collectAsState()
-    //TODO anon list of users with user ids
-    val userList by viewModel.lobbyUserList.collectAsState() //TMP
-    //TODO add value from server that will change when voting results come by
+    val userList by viewModel.anonUserList.collectAsState() //TMP
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -50,43 +49,41 @@ fun VotingTable(viewModel: MainViewModel)
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
         userList.forEach { user ->
-            //TODO if user is client, then skip row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                //default values when userId == ""
-                var icon: ImageVector = Icons.Default.RadioButtonUnchecked
-                var isActive: Boolean = true
-                if(userId != -1 && userId == 0)//user.userId) //user is the one that was voted for
-                {
-                    icon = Icons.Default.RadioButtonChecked
-                    isActive =  false
-                }
-                else if(userId != -1)
-                {
-                    isActive =  false
-                }
-                Text(text = user, fontSize = 18.sp) //TODO user.anonName
-                IconButton(onClick = {
-                    userId = 1 //TODO user.userId
-                    viewModel.vote(userId)
-                    },
-                    enabled = isActive
+            if (user.userId != viewModel.userId.collectAsState().value){
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
+                    var icon: ImageVector = Icons.Default.RadioButtonUnchecked
+                    var isActive: Boolean = true
+                    if(votedUserNickname == user.nickName)
+                    {
+                        icon = Icons.Default.RadioButtonChecked
+                    }
+                    if(votedUserNickname != "")
+                    {
+                        isActive =  false
+                    }
+                    Text(text = user.nickName, fontSize = 18.sp)
+                    IconButton(onClick = {
+                        votedUserNickname = user.nickName
+                        viewModel.vote(votedUserNickname)
+                        },
+                        enabled = isActive
+                    ) {
                         Icon(imageVector = icon, contentDescription = null)
+                    }
                 }
             }
         }
-        if(userId != -1)
+        if(votedUserNickname != "")
             Text(
                 text = "Waiting for all users to vote ...",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Thin,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
-//        Button(onClick = {showPopup = true}){ Text(text = "Debug end vote")}
         if (showPopup) {
             SummaryDialog(viewModel)
         }
@@ -97,6 +94,7 @@ fun VotingTable(viewModel: MainViewModel)
 fun SummaryDialog(viewModel : MainViewModel)
 {
     val scores by viewModel.scoreboardList.collectAsState()
+    val botName by viewModel.currentBotNickname.collectAsState()
     AlertDialog(
         onDismissRequest = {  },
         title = { Text(text = "Vote Ended") },
@@ -105,7 +103,7 @@ fun SummaryDialog(viewModel : MainViewModel)
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(text = "The real impostor was: \n")//TODO add name
+                Text(text = "The real impostor was: $botName")
 //                Text(text = "Those people voted correctly (+1 point):")
                 scores.forEach { score ->
                     Row(

@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,13 +14,13 @@ import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
     private val repository = Repository()
-    private val _anonUsernameData = MutableStateFlow("")
-    val anonUsernameData = _anonUsernameData.asStateFlow()
+//    private val _anonUsernameData = MutableStateFlow("")
+//    val anonUsernameData = _anonUsernameData.asStateFlow()
     private val _roomData = MutableStateFlow<Map<String, String>>(emptyMap())
     val roomData = _roomData.asStateFlow()
 
-    private val _messages = MutableStateFlow<List<Message>>(emptyList())
-    val messages: StateFlow<List<Message>> = _messages.asStateFlow()
+//    private val _messages = MutableStateFlow<List<Message>>(emptyList())
+//    val messages: StateFlow<List<Message>> = _messages.asStateFlow()
 //////////////////////////////////////////////////////////
     private val _uiState = MutableStateFlow(0)
     val uiState = _uiState.asStateFlow()
@@ -58,6 +57,12 @@ class MainViewModel : ViewModel() {
     private val _isGameRunning = MutableStateFlow(false)
     val isGameRunning = _isGameRunning.asStateFlow()
 
+    private val _currentBotNickname = MutableStateFlow("")
+    val currentBotNickname = _currentBotNickname.asStateFlow()
+    private val _anonUserList = MutableStateFlow<List<AnonUser>>(emptyList())
+    val anonUserList: StateFlow<List<AnonUser>> get() = _anonUserList
+    private val _gameTopic = MutableStateFlow("")
+    val gameTopic = _gameTopic.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -92,6 +97,14 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    private fun addItemToAnonsList(anon: AnonUser) {
+        viewModelScope.launch {
+            val updatedList = _anonUserList.value.toMutableList()
+            updatedList.add(anon)
+            _anonUserList.emit(updatedList)
+        }
+    }
+
     private fun startCountingCoroutine(num: MutableStateFlow<Int> )
     {
         CoroutineScope(Dispatchers.Default).launch {
@@ -120,6 +133,7 @@ class MainViewModel : ViewModel() {
                 Log.d(TAG, "Game started")
                 _isGameRunning.update{true}
                 _roundDurationSec.update{repository.getRoundDurationSec}
+                _gameTopic.update { repository.getTopic }
                 _uiState.update{2}
                 startCountingCoroutine(_roundDurationSec)
 
@@ -144,6 +158,7 @@ class MainViewModel : ViewModel() {
                 Log.d(TAG, "New Round")
                 _roundDurationSec.update{repository.getRoundDurationSec}
                 _uiScoreboardState.update { false }
+                _gameTopic.update { repository.getTopic }
                 _uiState.update{2}
                 startCountingCoroutine(_roundDurationSec)
             }
@@ -157,45 +172,50 @@ class MainViewModel : ViewModel() {
                 val scores = repository.getScoreboardList
                 scores.forEach { score ->  addItemToScoresList(score)}
                 _uiScoreboardState.update { true }
+                _currentBotNickname.update{repository.getCurrentBotNickname}
                 //display summary
             }
             is RepoEvent.TimeToVote -> {
                 Log.d(TAG, "Chat ended, vote screen")
                 _votingTimeSec.update{repository.getVotingTimeSec}
+                repository.getAnonUserList.forEach {anon -> addItemToAnonsList(anon)}
                 _uiState.update{3}
                 startCountingCoroutine(_votingTimeSec)
             }
         }
     }
 
-    fun getJoinCode(joinCode:String)
-    {
-        repository.setJoinCode(joinCode)
-    }
+//    fun getJoinCode(joinCode:String)
+//    {
+//        repository.setJoinCode(joinCode)
+//    }
 
-    fun addMessage(msg: Message) {
-        _messages.value += msg
-    }
+//    fun addMessage(msg: Message) {
+//        _messages.value += msg
+//    }
 
     fun saveUsername(usrNam:String)
     {
         repository.setUsername(usrNam)
     }
 
-    fun saveAnonUsername()
-    {
-        val str = repository.fetchAnonUsername()
-        _anonUsernameData.update { str }
-    }
+//    fun saveAnonUsername()
+//    {
+//        val str = repository.fetchAnonUsername()
+//        _anonUsernameData.update { str }
+//    }
 
     fun saveRoomData(dataDict: MutableMap<String, Int>) {
-        repository.createRoomReq(dataDict)
+        repository.sendCreateRoomReq(dataDict)
     }
 
     fun startGame(){
-        repository.startGameReq()
+        repository.sendStartGameReq()
     }
 
+    fun joinLobby(lobbyId : Int){
+        repository.sendJoinRoomReq(lobbyId)
+    }
 //    fun getRoomData()
 //    {
 //        val map = repository.fetchRoomData()
@@ -203,7 +223,7 @@ class MainViewModel : ViewModel() {
 //    }
 
     fun postMessage(messageString: String) {
-        repository.postNewMessageReq(messageString)
+        repository.sendPostNewMessageReq(messageString)
     }
 
     fun setServerIpV2R(ip: String) {
@@ -214,7 +234,7 @@ class MainViewModel : ViewModel() {
         repository.setServerPort(port)
     }
 
-    fun vote(userId: Int) {
-        repository.sendVoteResp(userId.toString())
+    fun vote(userNickname: String) {
+        repository.sendVoteResp(userNickname)
     }
 }
