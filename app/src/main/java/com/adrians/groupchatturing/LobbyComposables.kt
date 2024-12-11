@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material3.Button
@@ -40,23 +42,42 @@ fun LobbyScreen(viewModel: MainViewModel)
             fontWeight = FontWeight.Bold,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
-        userList.forEach { user ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(text = user, fontSize = 22.sp, color = Color.Green)
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f), // Let it take available vertical space
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.Start
+        ) {
+            items(userList) { user ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(text = user, fontSize = 22.sp, color = Color.Green)
+                }
             }
         }
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(34.dp) // Space between buttons
-        )
-        {
+//        userList.forEach { user ->
+//            Row(
+//                modifier = Modifier.fillMaxWidth(),
+//                verticalAlignment = Alignment.CenterVertically,
+//                horizontalArrangement = Arrangement.SpaceBetween
+//            ) {
+//                Text(text = user, fontSize = 22.sp, color = Color.Green)
+//            }
+//        }
+//        Row(
+//            horizontalArrangement = Arrangement.spacedBy(34.dp) // Space between buttons
+//        )
+//        {
             Button(onClick = { viewModel.startGame() }, enabled = isLobbyOwner) {
                 Text(text = "Start Game")
                 Icon(imageVector = Icons.Default.ChatBubble, contentDescription = null)
             }
-        }
+//        }
     }
 }

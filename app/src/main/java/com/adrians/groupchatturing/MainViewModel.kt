@@ -27,7 +27,7 @@ class MainViewModel : ViewModel() {
     private val _lobbyId = MutableStateFlow(0)
     val lobbyId= _lobbyId.asStateFlow()
 
-    private val _userName = MutableStateFlow("")
+    private val _userName = MutableStateFlow("User")
     val userName = _userName.asStateFlow()
 
     private val _userId = MutableStateFlow(0)
@@ -52,8 +52,8 @@ class MainViewModel : ViewModel() {
 
     private val _currentBotNickname = MutableStateFlow("")
     val currentBotNickname = _currentBotNickname.asStateFlow()
-    private val _anonUserList = MutableStateFlow<List<AnonUser>>(emptyList())
-    val anonUserList: StateFlow<List<AnonUser>> get() = _anonUserList
+    private val _anonUserList = MutableStateFlow<Set<AnonUser>>(emptySet())
+    val anonUserList: StateFlow<Set<AnonUser>> get() = _anonUserList
     private val _gameTopic = MutableStateFlow("")
     val gameTopic = _gameTopic.asStateFlow()
 
@@ -92,7 +92,7 @@ class MainViewModel : ViewModel() {
 
     private fun addItemToAnonsList(anon: AnonUser) {
         viewModelScope.launch {
-            val updatedList = _anonUserList.value.toMutableList()
+            val updatedList = _anonUserList.value.toMutableSet()
             updatedList.add(anon)
             _anonUserList.emit(updatedList)
         }
@@ -110,7 +110,13 @@ class MainViewModel : ViewModel() {
 
     private fun handleRepositoryEvent(event: RepoEvent) {
         when (event) {
-            is RepoEvent.ErrorOccurred -> Log.d(TAG, "ERROR occurred")
+            is RepoEvent.ErrorOccurred -> {
+                Log.d(TAG, "ERROR occurred ${event.data ?: ""}")
+                if (event.data == "CRITICAL")
+                {
+                    _uiState.update{0}
+                }
+            }
             is RepoEvent.UserRegistered -> {
                 Log.d(TAG, "User Registered")
                 _userName.update{repository.getUserName}
@@ -120,14 +126,16 @@ class MainViewModel : ViewModel() {
                 Log.d(TAG, "Captured lobby event")
                 _uiState.update{1}
                 _isHost.update{repository.getIsHost}
+                _lobbyUserList.update { emptyList() }
                 addItemToLobbyUserList(userName.value)
             }
             is RepoEvent.GameStarted -> {
                 Log.d(TAG, "Game started")
-                _roundDurationSec.update{repository.getRoundDurationSec}
-                _gameTopic.update { repository.getTopic }
-                _uiState.update{2}
-                startCountingCoroutine(_roundDurationSec)
+                //can display Starting game... info
+//                _roundDurationSec.update{repository.getRoundDurationSec}
+//                _gameTopic.update { repository.getTopic }
+//                _uiState.update{2}
+//                startCountingCoroutine(_roundDurationSec)
             }
             is RepoEvent.GameEnded -> {
                 Log.d(TAG, "Game ended, return to menu")
@@ -138,11 +146,13 @@ class MainViewModel : ViewModel() {
                 _uiState.update{1}
                 _isHost.update{repository.getIsHost}
                 val allUsers = repository.getUserList
+                _lobbyUserList.update { emptyList() }
                 allUsers.forEach { user ->  addItemToLobbyUserList(user)}
             }
             is RepoEvent.NewChatMessage -> {
                 Log.d(TAG, "New chat message")
                 val allMessages = repository.getChatMessages
+                _chatMessagesList.update { emptyList() }
                 allMessages.forEach { msg ->  addItemToChatMessagesList(msg)}
             }
             is RepoEvent.NewRound -> {
@@ -150,17 +160,20 @@ class MainViewModel : ViewModel() {
                 _roundDurationSec.update{repository.getRoundDurationSec}
                 _uiScoreboardState.update { false }
                 _gameTopic.update { repository.getTopic }
+                _chatMessagesList.update { emptyList() }
                 _uiState.update{2}
                 startCountingCoroutine(_roundDurationSec)
             }
             is RepoEvent.NewUserJoined -> {
                 Log.d(TAG, "New User")
                 val allUsers = repository.getUserList
+                _lobbyUserList.update { emptyList() }
                 allUsers.forEach { user ->  addItemToLobbyUserList(user)}
             }
             is RepoEvent.RoundEnded -> {
                 Log.d(TAG, "End of round after vote, display scoreboard")
                 val scores = repository.getScoreboardList
+                _scoreboardList.update { emptyList() }
                 scores.forEach { score ->  addItemToScoresList(score)}
                 _uiScoreboardState.update { true }
                 _currentBotNickname.update{repository.getCurrentBotNickname}

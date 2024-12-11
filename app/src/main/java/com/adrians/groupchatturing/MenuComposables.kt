@@ -20,6 +20,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -53,7 +54,7 @@ fun MenuScreen(mainViewModel: MainViewModel)
             text = "Turing Test\nbut in\nGroup Chat!",
             textAlign = TextAlign.Center
         )
-        CreateRoomButton(mainViewModel = mainViewModel, callback = {})
+        CreateRoomButton(mainViewModel = mainViewModel)
         JoinByCodeButton(mainViewModel = mainViewModel)
     } } }
 }
@@ -113,7 +114,7 @@ fun JoinInputDialog(
 }
 
 @Composable
-fun CreateRoomButton(mainViewModel: MainViewModel, modifier: Modifier = Modifier, callback: () -> Unit = {}) {
+fun CreateRoomButton(mainViewModel: MainViewModel, modifier: Modifier = Modifier) {
     var showCreateRoomDialog by remember { mutableStateOf(false) }
     Button(onClick = {showCreateRoomDialog=true},
         modifier = Modifier.padding(vertical = 20.dp))
@@ -136,6 +137,7 @@ fun CreateRoomButton(mainViewModel: MainViewModel, modifier: Modifier = Modifier
 @Composable
 fun SettingsButton(mainViewModel: MainViewModel, modifier: Modifier = Modifier) {
     var showDialog by remember { mutableStateOf(false) }
+    val userName by mainViewModel.userName.collectAsState()
     Button(onClick = { showDialog = true },
         modifier = modifier)
     {
@@ -144,6 +146,7 @@ fun SettingsButton(mainViewModel: MainViewModel, modifier: Modifier = Modifier) 
     if (showDialog)
     {
         SettingsDialog(
+            userName = userName,
             onDismiss = { showDialog = false },
             onConfirm = { name, port, ip ->
                 showDialog = false
@@ -159,8 +162,8 @@ fun CreateRoomDialog(
     onDismiss: () -> Unit,
     onConfirm: (MutableMap<String, Int>) -> Unit
 ) {
-    var maxRoundsNumber by remember { mutableIntStateOf(1) }
-    var maxPlayersNumber by remember { mutableIntStateOf(1) }
+    var maxRoundsNumber by remember { mutableIntStateOf(5) }
+    var maxPlayersNumber by remember { mutableIntStateOf(5) }
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
@@ -202,8 +205,8 @@ fun CreateRoomDialog(
 }
 
 @Composable
-fun SettingsDialog(onDismiss: () -> Unit, onConfirm: (String, String, String) -> Unit) {
-    var username by remember { mutableStateOf("User") }
+fun SettingsDialog(userName: String, onDismiss: () -> Unit, onConfirm: (String, String, String) -> Unit) {
+    var username by remember { mutableStateOf(userName) }
     var port by remember { mutableStateOf("12345") }
     var ipAddress by remember { mutableStateOf("192.168.0.94") }
 
