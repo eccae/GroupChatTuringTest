@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -33,9 +34,15 @@ fun VotingTable(viewModel: MainViewModel)
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = "Choose who is the imposter \n time to vote: $votingTimeSec",
+            text = "Choose who is the imposter!",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
+        Text(
+            text = "Time left to vote: $votingTimeSec",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Normal,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
         userList.forEach { user ->
@@ -69,7 +76,7 @@ fun VotingTable(viewModel: MainViewModel)
         }
         if(votedUserNickname != "")
             Text(
-                text = "Waiting for all users to vote ...",
+                text = "Waiting for vote to end ...",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Thin,
                 modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -85,24 +92,27 @@ fun SummaryDialog(viewModel : MainViewModel)
 {
     val scores by viewModel.scoreboardList.collectAsState()
     val botName by viewModel.currentBotNickname.collectAsState()
+    val roomData by viewModel.roomData.collectAsState()
+    val roundNum by viewModel.roundNumber.collectAsState()
     AlertDialog(
         onDismissRequest = {  },
-        title = { Text(text = "Vote Ended") },
+        title = { Text(text = "Vote Ended", modifier = Modifier.padding(8.dp)) },
         text = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(text = "The real impostor was: $botName")
+                Text(text = "The real impostor was: $botName", modifier = Modifier.padding(8.dp))
                 scores.forEach { score ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = "${score.username} : ${score.points}", fontSize = 18.sp)
+                        Text(text = "${score.username} : ${score.points}", fontSize = 18.sp, fontWeight = FontWeight.Thin)
                     }
                 }
+                Text(text = "Rounds left: ${(roomData["roundsNumber"]?:0) - roundNum}", modifier = Modifier.padding(8.dp))
             }
         },
         confirmButton = {}

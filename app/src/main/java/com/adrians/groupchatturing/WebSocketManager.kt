@@ -15,6 +15,7 @@ class WebSocketManager {
         .build()
 
     private lateinit var webSocket: WebSocket
+    private var isConnected: Boolean = false
 
     private val eventListeners = ConcurrentHashMap<Int, (JsonObject) -> Unit>()
 
@@ -25,6 +26,7 @@ class WebSocketManager {
         webSocket = client.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 Log.d(TAG,"Connected to WebSocket")
+                isConnected = true
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
@@ -39,15 +41,19 @@ class WebSocketManager {
             override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
                 Log.d(TAG,"Closing WebSocket: $code / $reason")
                 webSocket.close(code, reason)
+                isConnected = false
             }
 
             override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
                 Log.d(TAG,"WebSocket closed: $code / $reason")
+                isConnected = false
             }
 
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 Log.d(TAG,"WebSocket error: ${t.message}")
-                eventListeners[-1]?.invoke(JsonParser.parseString("WebSocket error: ${t.message}").asJsonObject)
+                isConnected = false
+//              eventListeners[-1]?.invoke(JsonParser.parseString("WebSocket error: ${t.message}").asJsonObject)
+                unregisterAllEventListeners()
             }
         })
     }
@@ -86,10 +92,16 @@ class WebSocketManager {
         eventListeners.clear()
     }
 
+    fun isConnected(): Boolean
+    {
+        return isConnected
+    }
+
     fun closeConnection() {
         if (::webSocket.isInitialized) {
 //            eventListeners[-1]?.invoke(json)
             webSocket.close(1000, "Client closing connection")
+            isConnected = false
         }
     }
 }

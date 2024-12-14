@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -21,17 +22,22 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.constraintlayout.compose.Dimension
 
 @Composable
 fun ChatScreen(viewModel: MainViewModel) {
@@ -41,8 +47,16 @@ fun ChatScreen(viewModel: MainViewModel) {
         Column(modifier = Modifier
             .fillMaxSize()
             .padding(it)) {
-            Text(text = "Time left for discussion: $roundDurationSec")
-            Text(text = "Discussion Topic: $topic")
+            Text(text = "Time left for discussion: $roundDurationSec",
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Thin,
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(6.dp))
+            Text(text = "Discussion Topic: $topic",
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center,
+                fontWeight = FontWeight.Normal,
+                modifier = Modifier.align(Alignment.CenterHorizontally))
             ChatMessages(
                 viewModel = viewModel,
                 activeUserId = viewModel.userId.collectAsState().value,
@@ -60,25 +74,55 @@ fun ChatMessages(
     activeUserId: Int,
     onSendMessage: (String) -> Unit,
 ) {
+    val listState = rememberLazyListState()
     val messagesList by viewModel.chatMessagesList.collectAsState()
     val hideKeyboardController = LocalSoftwareKeyboardController.current
     val msg = remember {
         mutableStateOf("")
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn {
+    LaunchedEffect(messagesList.size) {
+        if (messagesList.isNotEmpty()) {
+            listState.animateScrollToItem(messagesList.size - 1)
+        }
+    }
+
+    ConstraintLayout(modifier = Modifier.fillMaxSize()) {
+        val (messages, inputRow) = createRefs()
+//    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier
+                .constrainAs(messages) {
+                    top.linkTo(parent.top)
+                    bottom.linkTo(inputRow.top)
+                    height = Dimension.fillToConstraints
+                }
+                .fillMaxWidth()
+        )
+//        LazyColumn
+        {
             items(messagesList) { message ->
                 ChatBubble(message = message, activeUserId = activeUserId)
             }
         }
         Row(
             modifier = Modifier
+                .constrainAs(inputRow) {
+                    bottom.linkTo(parent.bottom) // Pin to the bottom
+                }
                 .fillMaxWidth()
-                .align(Alignment.BottomCenter)
-                .padding(8.dp)
-                .background(Color.LightGray), verticalAlignment = Alignment.CenterVertically
-        ) {
+                .background(Color.LightGray)
+                .padding(4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ){
+//        Row(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .align(Alignment.BottomCenter)
+//                .padding(4.dp)
+//                .background(Color.LightGray), verticalAlignment = Alignment.CenterVertically
+//        ) {
 
             TextField(
                 value = msg.value,

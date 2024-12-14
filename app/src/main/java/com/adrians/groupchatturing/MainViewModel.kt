@@ -11,11 +11,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 class MainViewModel : ViewModel() {
     private val repository = Repository()
 
-    private val _roomData = MutableStateFlow<Map<String, String>>(emptyMap())
+    private val _roomData = MutableStateFlow<Map<String, Int>>(emptyMap())
     val roomData = _roomData.asStateFlow()
 
     private val _uiState = MutableStateFlow(0)
@@ -27,7 +28,7 @@ class MainViewModel : ViewModel() {
     private val _lobbyId = MutableStateFlow(0)
     val lobbyId= _lobbyId.asStateFlow()
 
-    private val _userName = MutableStateFlow("User")
+    private val _userName = MutableStateFlow("User${Random.nextInt(100, 1000)}")
     val userName = _userName.asStateFlow()
 
     private val _userId = MutableStateFlow(0)
@@ -56,6 +57,9 @@ class MainViewModel : ViewModel() {
     val anonUserList: StateFlow<Set<AnonUser>> get() = _anonUserList
     private val _gameTopic = MutableStateFlow("")
     val gameTopic = _gameTopic.asStateFlow()
+
+    private val _roundNumber = MutableStateFlow(0)
+    val roundNumber = _roundNumber.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -131,6 +135,7 @@ class MainViewModel : ViewModel() {
             }
             is RepoEvent.GameStarted -> {
                 Log.d(TAG, "Game started")
+                _roundNumber.update { 1 }
                 //can display Starting game... info
 //                _roundDurationSec.update{repository.getRoundDurationSec}
 //                _gameTopic.update { repository.getTopic }
@@ -145,6 +150,7 @@ class MainViewModel : ViewModel() {
                 Log.d(TAG, "Joined lobby as player")
                 _uiState.update{1}
                 _isHost.update{repository.getIsHost}
+                _roomData.update { repository.getRoomData }
                 val allUsers = repository.getUserList
                 _lobbyUserList.update { emptyList() }
                 allUsers.forEach { user ->  addItemToLobbyUserList(user)}
@@ -162,6 +168,7 @@ class MainViewModel : ViewModel() {
                 _gameTopic.update { repository.getTopic }
                 _chatMessagesList.update { emptyList() }
                 _uiState.update{2}
+                _roundNumber.update { repository.getRoundNum }
                 startCountingCoroutine(_roundDurationSec)
             }
             is RepoEvent.NewUserJoined -> {
@@ -194,6 +201,11 @@ class MainViewModel : ViewModel() {
     }
 
     fun setRoomDataAndCreateRoom(dataDict: MutableMap<String, Int>) {
+        if(repository.getUserName == "")
+        {
+            repository.setUsername(_userName.value)
+        }
+        _roomData.update { dataDict }
         repository.sendCreateRoomReq(dataDict)
     }
 
@@ -202,11 +214,16 @@ class MainViewModel : ViewModel() {
     }
 
     fun joinLobby(lobbyId : Int){
+        if(repository.getUserName == "")
+        {
+            repository.setUsername(_userName.value)
+        }
         repository.sendJoinRoomReq(lobbyId)
     }
 
     fun postMessage(messageString: String) {
-        repository.sendPostNewMessageReq(messageString)
+        if(_roundDurationSec.value > 0 && messageString.isNotEmpty())
+            repository.sendPostNewMessageReq(messageString)
     }
 
     fun setServerIpV2R(ip: String) {
@@ -219,5 +236,9 @@ class MainViewModel : ViewModel() {
 
     fun vote(userNickname: String) {
         repository.sendVoteResp(userNickname)
+    }
+
+    fun DEBUG_force_view(view: Int) {
+        _uiState.update { view }
     }
 }

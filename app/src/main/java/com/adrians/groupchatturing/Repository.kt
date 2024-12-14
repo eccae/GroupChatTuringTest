@@ -1,12 +1,10 @@
 package com.adrians.groupchatturing
 
 import android.util.Log
-import com.google.gson.JsonArray
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 const val TAG = "MyLogTag"
@@ -22,19 +20,17 @@ data class AnonUser(
     val userId: Int = 0,
     val nickName: String = "")
 
-
-//TODO replace class with object when no data needed
 sealed class RepoEvent {
-    data class LobbyCreated(val data: Map<String,String>) : RepoEvent()
-    data class UserRegistered(val data: String) : RepoEvent()
-    data class GameStarted(val data: String) : RepoEvent()
-    data class GameEnded(val data: String) : RepoEvent()
-    data class RoundEnded(val data: String) : RepoEvent()
-    data class TimeToVote(val data: String) : RepoEvent()
-    data class NewChatMessage(val data: String) : RepoEvent()
-    data class NewRound(val data: String) : RepoEvent()
-    data class NewUserJoined(val data: String) : RepoEvent()
-    data class JoinedLobby(val data: String) : RepoEvent()
+    data object LobbyCreated: RepoEvent()
+    data object UserRegistered : RepoEvent()
+    data object GameStarted : RepoEvent()
+    data object GameEnded : RepoEvent()
+    data object RoundEnded : RepoEvent()
+    data object TimeToVote : RepoEvent()
+    data object NewChatMessage : RepoEvent()
+    data object NewRound : RepoEvent()
+    data object NewUserJoined : RepoEvent()
+    data object JoinedLobby : RepoEvent()
     data class ErrorOccurred(val data: String) : RepoEvent()
 }
 
@@ -48,6 +44,8 @@ class Repository {
     private val roomData: MutableMap<String,Int> by lazy {
         mutableMapOf()
     }
+    val getRoomData: MutableMap<String,Int>
+        get() = roomData
 
     private var lobbyIdFromUserInput = 0 //Holds lobby Id provided by user in join lobby operation
 
@@ -129,8 +127,8 @@ class Repository {
     {
         val serverUrl ="ws://${serverIp}:${serverPort}"
         webSocketManager.closeConnection()
-        webSocketManager.connect(serverUrl)
         registerEvents()
+        webSocketManager.connect(serverUrl)
     }
 
     fun sendCreateRoomReq(dataDict: MutableMap<String, Int>) {
@@ -152,17 +150,19 @@ class Repository {
 
     fun sendPostNewMessageReq(chatMessage : String)
     {
-        webSocketManager.sendMessage("""{"msgType": 10, "clientId": $userId, "lobbyId": $lobbyId, "chatMsg": "$chatMessage"}""")
+        if(webSocketManager.isConnected())
+            webSocketManager.sendMessage("""{"msgType": 10, "clientId": $userId, "lobbyId": $lobbyId, "chatMsg": "$chatMessage"}""")
     }
 
     fun sendVoteResp(votedNickname : String)
     {
-        webSocketManager.sendMessage("""{"msgType": 13, "clientId": $userId, "lobbyId": $lobbyId, "chatbotNickname": "$votedNickname"}""")
+        if(webSocketManager.isConnected())
+            webSocketManager.sendMessage("""{"msgType": 13, "clientId": $userId, "lobbyId": $lobbyId, "chatbotNickname": "$votedNickname"}""")
     }
 
     fun sendStartGameReq()
     {
-        if(!isHost) return
+        if(!isHost || !webSocketManager.isConnected()) return
         Log.d(TAG, "Sending sendStartGameReq")
         webSocketManager.sendMessage("""{"msgType": 16, "clientId": $userId, "lobbyId": $lobbyId}""")
     }
@@ -179,7 +179,7 @@ class Repository {
             Log.d(TAG,"Handling event_2: $json")
             userId = json.get("clientId").asInt
             Log.d(TAG, "userId: $userId")
-            CoroutineScope(Dispatchers.IO).launch{ _events.emit(RepoEvent.UserRegistered("")) }
+            CoroutineScope(Dispatchers.IO).launch{ _events.emit(RepoEvent.UserRegistered) }
             if(isHost)
                 webSocketManager.sendMessage("""{"msgType": 3, "clientId": $userId, "username": "$userName", "maxUsers": ${roomData["maxUsers"]}, "roundsNumber": ${roomData["roundsNumber"]}}""")
             else
@@ -190,9 +190,10 @@ class Repository {
         webSocketManager.registerEventListener(4) { json ->
             Log.d(TAG,"Handling event_4: $json")
             userList.clear()
+            userList.add(userName)
             lobbyId = json.get("lobbyId").asInt
             isHost = true
-            CoroutineScope(Dispatchers.IO).launch{ _events.emit(RepoEvent.LobbyCreated(mapOf("lobbyId" to lobbyId.toString()))) }
+            CoroutineScope(Dispatchers.IO).launch{ _events.emit(RepoEvent.LobbyCreated)}
         }
 
         //Join lobby Resp
@@ -203,12 +204,12 @@ class Repository {
             Log.d(TAG,"Handling event_6 2: $json")
             userList.clear()
             userList.addAll(json.getAsJsonArray("userList").map { it.asString })
-            Log.d(TAG,"Handling event_6 4: $json") //lateinit property roomData has not been initialized
+            Log.d(TAG,"Handling event_6 4: $json")
             roomData["maxUsers"] = json.get("maxUsers").asInt
             roomData["roundsNumber"] = json.get("roundsNumber").asInt
             Log.d(TAG,"Handling event_6 5: $json")
             //Unused field lobbyCreator: "lobbyCreator": "Jane Doe"
-            CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.JoinedLobby("")) }
+            CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.JoinedLobby) }
         }
 
         //New user joined Info Message - Specific lobby
@@ -217,7 +218,7 @@ class Repository {
             if(lobbyId == json.get("lobbyId").asInt) {
                 val newUser = json.get("newUser").asString
                 userList.add(newUser)
-                CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.NewUserJoined("")) }
+                CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.NewUserJoined) }
             }
         }
 
@@ -227,7 +228,7 @@ class Repository {
 //            topic = json.get("topic").asString
 //            roundDurationSec = json.get("roundDurationSec").asInt
 //            roundNum = json.get("roundNum").asInt
-            CoroutineScope(Dispatchers.IO).launch{ _events.emit(RepoEvent.GameStarted("")) }
+            CoroutineScope(Dispatchers.IO).launch{ _events.emit(RepoEvent.GameStarted) }
         }
 
         //New round msg - Specific lobby
@@ -238,7 +239,7 @@ class Repository {
                 topic = json.get("topic").asString
                 roundDurationSec = json.get("roundDurationSec").asInt
                 roundNum = json.get("roundNum").asInt
-                CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.NewRound("")) }
+                CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.NewRound) }
             }
         }
 
@@ -249,7 +250,7 @@ class Repository {
                 Log.d(TAG,"Handling event_6 1: $json") //Error parsing message: lateinit property chatMessages has not been initialized
                 chatMessages.add(ChatMsg(json.get("chatMsg").asString,json.get("senderNickname").asString,json.get("senderId").asInt))
                 Log.d(TAG,"Handling event_6 2: $json")
-                CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.NewChatMessage("")) }
+                CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.NewChatMessage) }
             }
         }
 
@@ -261,7 +262,7 @@ class Repository {
                 anonUserList.clear()
                 anonUserList.addAll(json.getAsJsonObject("usersNicknames").entrySet().map { entry ->
                     AnonUser(userId = entry.key.toInt(), nickName = entry.value.asString) })
-                CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.TimeToVote("")) }
+                CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.TimeToVote) }
             }
         }
 
@@ -273,7 +274,7 @@ class Repository {
                 scoreboardList.addAll(json.getAsJsonObject("scoreboard").entrySet().map { entry ->
                     UserScore(username = entry.key, points = entry.value.asInt) })
                 currentBotNickname = json.get("chatbotNickname").asString
-                CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.RoundEnded("")) }
+                CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.RoundEnded) }
             }
         }
 
@@ -283,7 +284,7 @@ class Repository {
             if(lobbyId == json.get("lobbyId").asInt) {
                 webSocketManager.unregisterAllEventListeners()
                 webSocketManager.closeConnection()
-                CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.GameEnded("")) }
+                CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.GameEnded) }
             }
         }
 
@@ -292,7 +293,7 @@ class Repository {
             Log.d(TAG,"Handling event_17: $json")
             if(lobbyId == json.get("lobbyId").asInt) {
                 userList.remove(json.get("newUser").asString)
-                CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.NewUserJoined("")) }
+                CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.NewUserJoined) }
             }
         }
 
