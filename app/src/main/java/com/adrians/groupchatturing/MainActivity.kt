@@ -65,7 +65,7 @@ class MainActivity : ComponentActivity() {
 fun MainView(mainViewModel: MainViewModel) {
     val state by mainViewModel.uiState.collectAsState()
 
-    val isDebugOn = true
+    val isDebugOn = false
     var isDebugViewsOn by remember { mutableStateOf(false) }
 
     when (state) {
@@ -115,7 +115,7 @@ fun MainView(mainViewModel: MainViewModel) {
             ) {
                 repeat(4) { index ->
                     Button(
-                        onClick = { mainViewModel.DEBUG_force_view(index) },
+                        onClick = { mainViewModel.debugForceView(index) },
                         shape = RoundedCornerShape(50),
                         colors = ButtonDefaults.buttonColors(containerColor = Color.LightGray)
                     ) {

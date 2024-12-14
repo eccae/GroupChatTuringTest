@@ -47,7 +47,8 @@ class Repository {
     val getRoomData: MutableMap<String,Int>
         get() = roomData
 
-    private var lobbyIdFromUserInput = 0 //Holds lobby Id provided by user in join lobby operation
+    //Holds lobby Id provided by user in join lobby operation
+    private var lobbyIdFromUserInput = 0
 
     private var userName : String = ""
     val getUserName: String
@@ -247,7 +248,7 @@ class Repository {
         webSocketManager.registerEventListener(11) { json ->
             Log.d(TAG,"Handling event_11: $json")
             if(lobbyId == json.get("lobbyId").asInt) {
-                Log.d(TAG,"Handling event_6 1: $json") //Error parsing message: lateinit property chatMessages has not been initialized
+                Log.d(TAG,"Handling event_6 1: $json")
                 chatMessages.add(ChatMsg(json.get("chatMsg").asString,json.get("senderNickname").asString,json.get("senderId").asInt))
                 Log.d(TAG,"Handling event_6 2: $json")
                 CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.NewChatMessage) }

@@ -136,11 +136,6 @@ class MainViewModel : ViewModel() {
             is RepoEvent.GameStarted -> {
                 Log.d(TAG, "Game started")
                 _roundNumber.update { 1 }
-                //can display Starting game... info
-//                _roundDurationSec.update{repository.getRoundDurationSec}
-//                _gameTopic.update { repository.getTopic }
-//                _uiState.update{2}
-//                startCountingCoroutine(_roundDurationSec)
             }
             is RepoEvent.GameEnded -> {
                 Log.d(TAG, "Game ended, return to menu")
@@ -238,7 +233,7 @@ class MainViewModel : ViewModel() {
         repository.sendVoteResp(userNickname)
     }
 
-    fun DEBUG_force_view(view: Int) {
+    fun debugForceView(view: Int) {
         _uiState.update { view }
     }
 }

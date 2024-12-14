@@ -4,7 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -69,7 +68,7 @@ fun LobbyScreen(viewModel: MainViewModel)
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f), // Let it take available vertical space
+                .weight(1f),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.Start
         ) {
@@ -78,13 +77,13 @@ fun LobbyScreen(viewModel: MainViewModel)
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 4.dp),
-                    border = BorderStroke(1.dp, Color.Gray), // Add a visible border
-                    shape = RoundedCornerShape(8.dp), // Optional: Rounded corners for better visuals
+                    border = BorderStroke(1.dp, Color.Gray),
+                    shape = RoundedCornerShape(8.dp),
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp) // Padding inside each cell
+                            .padding(16.dp)
                     ) {
                         Text(
                             text = user,
@@ -94,15 +93,6 @@ fun LobbyScreen(viewModel: MainViewModel)
                         )
                     }
                 }
-//                Row(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(horizontal = 8.dp),
-//                    verticalAlignment = Alignment.CenterVertically,
-//                    horizontalArrangement = Arrangement.SpaceBetween
-//                ) {
-//                    Text(text = user, fontSize = 22.sp, color = Color.LightGray)
-//                }
             }
         }
         if (!isLobbyOwner)
@@ -115,23 +105,9 @@ fun LobbyScreen(viewModel: MainViewModel)
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         }
-//        userList.forEach { user ->
-//            Row(
-//                modifier = Modifier.fillMaxWidth(),
-//                verticalAlignment = Alignment.CenterVertically,
-//                horizontalArrangement = Arrangement.SpaceBetween
-//            ) {
-//                Text(text = user, fontSize = 22.sp, color = Color.Green)
-//            }
-//        }
-//        Row(
-//            horizontalArrangement = Arrangement.spacedBy(34.dp) // Space between buttons
-//        )
-//        {
             Button(onClick = { viewModel.startGame() }, enabled = isLobbyOwner) {
                 Text(text = "Start Game ")
                 Icon(imageVector = Icons.Default.ChatBubble, contentDescription = null)
             }
-//        }
     }
 }

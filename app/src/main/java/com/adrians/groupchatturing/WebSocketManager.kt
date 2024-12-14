@@ -52,7 +52,6 @@ class WebSocketManager {
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 Log.d(TAG,"WebSocket error: ${t.message}")
                 isConnected = false
-//              eventListeners[-1]?.invoke(JsonParser.parseString("WebSocket error: ${t.message}").asJsonObject)
                 unregisterAllEventListeners()
             }
         })
@@ -99,7 +98,6 @@ class WebSocketManager {
 
     fun closeConnection() {
         if (::webSocket.isInitialized) {
-//            eventListeners[-1]?.invoke(json)
             webSocket.close(1000, "Client closing connection")
             isConnected = false
         }

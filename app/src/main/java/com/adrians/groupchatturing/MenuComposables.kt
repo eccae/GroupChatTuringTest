@@ -3,7 +3,6 @@ package com.adrians.groupchatturing
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,12 +13,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
-import androidx.compose.material.icons.filled.DeveloperBoard
 import androidx.compose.material.icons.filled.DoubleArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -58,7 +55,7 @@ fun MenuScreen(mainViewModel: MainViewModel)
             Column(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.align(Alignment.Center)//Modifier.fillMaxSize()
+                modifier = Modifier.align(Alignment.Center)
             )
             {
                 Text(
@@ -71,8 +68,8 @@ fun MenuScreen(mainViewModel: MainViewModel)
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(26.dp)
-                        .wrapContentHeight(align = Alignment.CenterVertically) // Center vertically
-                        .shadow(4.dp, shape = RoundedCornerShape(8.dp)) // Add a subtle shadow
+                        .wrapContentHeight(align = Alignment.CenterVertically)
+                        .shadow(4.dp, shape = RoundedCornerShape(8.dp))
                 )
                 CreateRoomButton(mainViewModel = mainViewModel)
                 JoinByCodeButton(mainViewModel = mainViewModel)

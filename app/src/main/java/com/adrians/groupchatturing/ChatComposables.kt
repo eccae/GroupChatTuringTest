@@ -89,7 +89,6 @@ fun ChatMessages(
 
     ConstraintLayout(modifier = Modifier.fillMaxSize()) {
         val (messages, inputRow) = createRefs()
-//    Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             state = listState,
             modifier = Modifier
@@ -100,7 +99,6 @@ fun ChatMessages(
                 }
                 .fillMaxWidth()
         )
-//        LazyColumn
         {
             items(messagesList) { message ->
                 ChatBubble(message = message, activeUserId = activeUserId)
@@ -116,14 +114,6 @@ fun ChatMessages(
                 .padding(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ){
-//        Row(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .align(Alignment.BottomCenter)
-//                .padding(4.dp)
-//                .background(Color.LightGray), verticalAlignment = Alignment.CenterVertically
-//        ) {
-
             TextField(
                 value = msg.value,
                 onValueChange = { msg.value = it },
