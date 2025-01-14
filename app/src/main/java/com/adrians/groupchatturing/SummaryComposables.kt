@@ -24,7 +24,7 @@ fun VotingTable(viewModel: MainViewModel)
     var votedUserNickname by remember { mutableStateOf("") }
     val showPopup by viewModel.uiScoreboardState.collectAsState()
     val votingTimeSec by viewModel.votingTimeSec.collectAsState()
-    val userList by viewModel.anonUserList.collectAsState() //TMP
+    val userList by viewModel.anonUserList.collectAsState()
 
     Column(
         modifier = Modifier

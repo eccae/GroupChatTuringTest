@@ -20,8 +20,6 @@ data class AnonUser(
     val userId: Int = 0,
     val nickName: String = "")
 
-//TODO s
-//Handle multiple start game button clicks
 sealed class RepoEvent {
     data object LobbyCreated: RepoEvent()
     data object UserRegistered : RepoEvent()

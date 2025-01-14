@@ -19,6 +19,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,6 +36,7 @@ fun LobbyScreen(viewModel: MainViewModel)
     val lobbyId by viewModel.lobbyId.collectAsState()
     val userName by viewModel.userName.collectAsState()
     val isLobbyOwner by viewModel.isHost.collectAsState()
+    var startClicked by remember { mutableStateOf(false) }
     val userList by viewModel.lobbyUserList.collectAsState()
     val roomData by viewModel.roomData.collectAsState()
 
@@ -105,7 +109,7 @@ fun LobbyScreen(viewModel: MainViewModel)
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         }
-            Button(onClick = { viewModel.startGame() }, enabled = isLobbyOwner) {
+            Button(onClick = { if(!startClicked) {viewModel.startGame(); startClicked = true } }, enabled = isLobbyOwner) {
                 Text(text = "Start Game ")
                 Icon(imageVector = Icons.Default.ChatBubble, contentDescription = null)
             }
