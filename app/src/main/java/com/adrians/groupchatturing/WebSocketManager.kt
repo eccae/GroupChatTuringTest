@@ -52,6 +52,7 @@ class WebSocketManager {
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 Log.d(TAG,"WebSocket error: ${t.message}")
                 isConnected = false
+                handleWebSocketLostConnection()
                 unregisterAllEventListeners()
             }
         })
@@ -64,10 +65,23 @@ class WebSocketManager {
             if (msgType != null && eventListeners.containsKey(msgType)) {
                 eventListeners[msgType]?.invoke(json)
             } else {
-                println("No listener for id: $msgType")
+                Log.d(TAG, "No listener for id: $msgType")
             }
         } catch (e: Exception) {
-            println("Error parsing message: ${e.message}")
+            Log.d(TAG, "Error parsing message: ${e.message}")
+        }
+    }
+
+    private fun handleWebSocketLostConnection() {
+        try {
+            if (eventListeners.containsKey(-2)) {
+                val json = JsonParser.parseString("""{"msg": "WebSocket error: Connection Lost","msgType":-2}""").asJsonObject
+                eventListeners[-2]?.invoke(json)
+            } else {
+                Log.d(TAG,"No listener for error message -2")
+            }
+        } catch (e: Exception) {
+            Log.d(TAG, "Error parsing message: ${e.message}")
         }
     }
 
@@ -75,7 +89,7 @@ class WebSocketManager {
         if (::webSocket.isInitialized) {
             webSocket.send(jsonMessage)
         } else {
-            println("WebSocket is not connected.")
+            Log.d(TAG, "WebSocket is not connected.")
         }
     }
 

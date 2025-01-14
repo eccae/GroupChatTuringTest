@@ -20,6 +20,8 @@ data class AnonUser(
     val userId: Int = 0,
     val nickName: String = "")
 
+//TODO s
+//Handle multiple start game button clicks
 sealed class RepoEvent {
     data object LobbyCreated: RepoEvent()
     data object UserRegistered : RepoEvent()
@@ -202,13 +204,10 @@ class Repository {
             Log.d(TAG,"Handling event_6: $json")
             lobbyId = json.get("lobbyId").asInt
             isHost = false
-            Log.d(TAG,"Handling event_6 2: $json")
             userList.clear()
             userList.addAll(json.getAsJsonArray("userList").map { it.asString })
-            Log.d(TAG,"Handling event_6 4: $json")
             roomData["maxUsers"] = json.get("maxUsers").asInt
             roomData["roundsNumber"] = json.get("roundsNumber").asInt
-            Log.d(TAG,"Handling event_6 5: $json")
             //Unused field lobbyCreator: "lobbyCreator": "Jane Doe"
             CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.JoinedLobby) }
         }
@@ -248,9 +247,7 @@ class Repository {
         webSocketManager.registerEventListener(11) { json ->
             Log.d(TAG,"Handling event_11: $json")
             if(lobbyId == json.get("lobbyId").asInt) {
-                Log.d(TAG,"Handling event_6 1: $json")
                 chatMessages.add(ChatMsg(json.get("chatMsg").asString,json.get("senderNickname").asString,json.get("senderId").asInt))
-                Log.d(TAG,"Handling event_6 2: $json")
                 CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.NewChatMessage) }
             }
         }
@@ -304,6 +301,12 @@ class Repository {
             if(lobbyId == json.get("lobbyId").asInt) {
                 CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.ErrorOccurred("CRITICAL")) }
             }
+        }
+
+        //WebSocket lost connection or other error
+        webSocketManager.registerEventListener(-2) { json ->
+            Log.d(TAG,"Handling error_-2: $json")
+            CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.ErrorOccurred("CRITICAL"))}
         }
     }
 }
