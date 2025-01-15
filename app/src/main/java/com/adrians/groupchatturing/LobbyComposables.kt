@@ -109,7 +109,7 @@ fun LobbyScreen(viewModel: MainViewModel)
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         }
-            Button(onClick = { if(!startClicked) {viewModel.startGame(); startClicked = true } }, enabled = isLobbyOwner) {
+            Button(onClick = { if(!startClicked) {viewModel.startGame(); startClicked = true } }, enabled = (isLobbyOwner && !startClicked) ) {
                 Text(text = "Start Game ")
                 Icon(imageVector = Icons.Default.ChatBubble, contentDescription = null)
             }
