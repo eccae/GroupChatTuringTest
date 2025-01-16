@@ -190,7 +190,7 @@ fun CreateRoomDialog(
     onDismiss: () -> Unit,
     onConfirm: (MutableMap<String, Int>) -> Unit
 ) {
-    var maxRoundsNumber by remember { mutableIntStateOf(5) }
+    var maxRoundsNumber by remember { mutableIntStateOf(2) }
     var maxPlayersNumber by remember { mutableIntStateOf(5) }
 
     AlertDialog(
