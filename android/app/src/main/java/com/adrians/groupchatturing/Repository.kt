@@ -37,9 +37,17 @@ sealed class RepoEvent {
 //INFO
 //Naming convention - no  getter functions, when sending to server: sendXReq, setting fields: setX
 class Repository {
-    private var serverPort = "12345"
-    private var serverIp = "192.168.0.94"
     private var webSocketManager = WebSocketManager()
+
+    private var serverPort = "12345"
+    val getServerPort: String
+        get() = serverPort
+    private var serverIp = "192.168.0.94"
+    val getServerIp: String
+        get() = serverIp
+    private var serverPrefix = "ws://"
+    val getServerPrefix: String
+        get() = serverPrefix
 
     private val roomData: MutableMap<String,Int> by lazy {
         mutableMapOf()
@@ -124,12 +132,21 @@ class Repository {
         Log.d(TAG, port)
     }
 
+    fun setServerPrefix(prefix: String) {
+        serverPrefix = prefix
+        Log.d(TAG, prefix)
+    }
+
     private fun startConnection()
     {
-        val serverUrl ="ws://${serverIp}:${serverPort}"
-        webSocketManager.closeConnection()
-        registerEvents()
-        webSocketManager.connect(serverUrl)
+        val serverUrl ="${serverPrefix}${serverIp}:${serverPort}"
+        try {
+            webSocketManager.closeConnection()
+            registerEvents()
+            webSocketManager.connect(serverUrl)
+        } catch (e: Exception) {
+            Log.d(TAG, "Connection error to ${serverIp}:${serverPort}")
+        }
     }
 
     fun sendCreateRoomReq(dataDict: MutableMap<String, Int>) {

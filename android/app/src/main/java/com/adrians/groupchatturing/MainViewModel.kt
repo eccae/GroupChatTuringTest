@@ -61,10 +61,20 @@ class MainViewModel : ViewModel() {
     private val _roundNumber = MutableStateFlow(0)
     val roundNumber = _roundNumber.asStateFlow()
 
+    private val _serverIpV2R = MutableStateFlow("")
+    val serverIpV2R = _serverIpV2R.asStateFlow()
+    private val _serverPortV2R = MutableStateFlow("")
+    val serverPortV2R = _serverPortV2R.asStateFlow()
+    private val _serverPrefix = MutableStateFlow("")
+    val serverPrefix = _serverPrefix.asStateFlow()
+
     init {
         viewModelScope.launch {
             repository.events.collect { event ->
                 _lobbyId.update { repository.getLobbyId }
+                _serverIpV2R.update { repository.getServerIp}
+                _serverPortV2R.update { repository.getServerPort }
+                _serverPrefix.update { repository.getServerPrefix }
                 handleRepositoryEvent(event)
             }
         }
@@ -193,6 +203,7 @@ class MainViewModel : ViewModel() {
     fun setUsername(usrNam:String)
     {
         repository.setUsername(usrNam)
+        _userName.update { repository.getUserName }
     }
 
     fun setRoomDataAndCreateRoom(dataDict: MutableMap<String, Int>) {
@@ -223,14 +234,27 @@ class MainViewModel : ViewModel() {
 
     fun setServerIpV2R(ip: String) {
         repository.setServerIp(ip)
+        _serverIpV2R.update { repository.getServerIp }
     }
 
     fun setServerPortV2R(port: String) {
         repository.setServerPort(port)
+        _serverPortV2R.update { repository.getServerPort }
+    }
+
+    fun setServerPrefix(prefix: String) {
+        repository.setServerPrefix(prefix)
+        _serverPrefix.update { repository.getServerPrefix }
     }
 
     fun vote(userNickname: String) {
         repository.sendVoteResp(userNickname)
+    }
+
+    fun pullCurrentServerAddress() {
+        _serverIpV2R.update { repository.getServerIp}
+        _serverPortV2R.update { repository.getServerPort }
+        _serverPrefix.update { repository.getServerPrefix }
     }
 
     fun debugForceView(view: Int) {

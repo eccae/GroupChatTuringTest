@@ -3,6 +3,7 @@ package com.adrians.groupchatturing
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +21,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -159,7 +161,11 @@ fun CreateRoomButton(mainViewModel: MainViewModel, modifier: Modifier = Modifier
 fun SettingsButton(mainViewModel: MainViewModel, modifier: Modifier = Modifier) {
     var showDialog by remember { mutableStateOf(false) }
     val userName by mainViewModel.userName.collectAsState()
-    FloatingActionButton(onClick = { showDialog = true },
+    val port by mainViewModel.serverPortV2R.collectAsState()
+    val ip by mainViewModel.serverIpV2R.collectAsState()
+    val prefix by mainViewModel.serverPrefix.collectAsState()
+
+    FloatingActionButton(onClick = { showDialog = true; mainViewModel.pullCurrentServerAddress() },
         modifier = modifier)
     {
         Icon(imageVector = Icons.Default.Settings, contentDescription = null)
@@ -167,13 +173,14 @@ fun SettingsButton(mainViewModel: MainViewModel, modifier: Modifier = Modifier) 
     if (showDialog)
     {
         SettingsDialog(
-            userName = userName,
+            username = userName, ip = ip, port = port, prefix = prefix,
             onDismiss = { showDialog = false },
-            onConfirm = { name, port, ip ->
+            onConfirm = { name, _port, _ip, _prefix ->
                 showDialog = false
                 mainViewModel.setUsername(name)
-                mainViewModel.setServerIpV2R(ip)
-                mainViewModel.setServerPortV2R(port)
+                mainViewModel.setServerIpV2R(_ip)
+                mainViewModel.setServerPortV2R(_port)
+                mainViewModel.setServerPrefix(_prefix)
             })
     }
 }
@@ -226,10 +233,12 @@ fun CreateRoomDialog(
 }
 
 @Composable
-fun SettingsDialog(userName: String, onDismiss: () -> Unit, onConfirm: (String, String, String) -> Unit) {
-    var username by remember { mutableStateOf(userName) }
-    var port by remember { mutableStateOf("12345") }
-    var ipAddress by remember { mutableStateOf("192.168.0.94") }
+fun SettingsDialog(username: String, ip: String, port: String, prefix: String, onDismiss: () -> Unit, onConfirm: (String, String, String, String) -> Unit) {
+    var newUsername by remember { mutableStateOf(username) }
+    var newPort by remember { mutableStateOf(port) }
+    var newIpAddress by remember { mutableStateOf(ip) }
+    var radioOption by remember { mutableStateOf(prefix) }
+    val options = listOf("ws://", "wss://", "http://", "https://", "")
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
@@ -239,32 +248,49 @@ fun SettingsDialog(userName: String, onDismiss: () -> Unit, onConfirm: (String, 
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
-                    value = username,
-                    onValueChange = { username = it },
+                    value = newUsername,
+                    onValueChange = { newUsername = it },
                     label = { Text("Username") },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
-                    value = port,
-                    onValueChange = { port = it },
+                    value = newPort,
+                    onValueChange = { newPort = it },
                     label = { Text("Port") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
-                    value = ipAddress,
-                    onValueChange = { ipAddress = it },
+                    value = newIpAddress,
+                    onValueChange = { newIpAddress = it },
                     label = { Text("IP Address") },
                     modifier = Modifier.fillMaxWidth()
                 )
+                Spacer(modifier = Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(4.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    options.forEach { option ->
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            RadioButton(
+                                selected = (radioOption == option),
+                                onClick = { radioOption = option }
+                            )
+                            Text(text = option)
+                        }
+                    }
+                }
             }
         },
         confirmButton = {
             Button(onClick = {
-                if (username.isNotBlank() && port.isNotBlank() && ipAddress.isNotBlank()) {
-                    onConfirm(username, port, ipAddress)
+                if (newUsername.isNotBlank() && newPort.isNotBlank() && newIpAddress.isNotBlank()) {
+                    onConfirm(newUsername, newPort, newIpAddress, radioOption)
                 } else {
                     println("Invalid input")
                 }
