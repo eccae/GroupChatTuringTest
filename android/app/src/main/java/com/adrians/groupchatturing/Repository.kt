@@ -42,7 +42,7 @@ class Repository {
     private var serverPort = "12345"
     val getServerPort: String
         get() = serverPort
-    private var serverIp = "localhost"
+    private var serverIp = "192.168.0.1"
     val getServerIp: String
         get() = serverIp
     private var serverPrefix = "ws://"
