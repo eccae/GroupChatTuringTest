@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">127.0.0.1</domain>
+    </domain-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">192.168.0.90</domain>
+        <domain includeSubdomains="true">192.168.0.91</domain>
+        <domain includeSubdomains="true">192.168.0.92</domain>
+        <domain includeSubdomains="true">192.168.0.93</domain>
         <domain includeSubdomains="true">192.168.0.94</domain>
+        <domain includeSubdomains="true">192.168.0.95</domain>
+        <domain includeSubdomains="true">192.168.0.96</domain>
+        <domain includeSubdomains="true">192.168.0.97</domain>
+        <domain includeSubdomains="true">192.168.0.98</domain>
+        <domain includeSubdomains="true">192.168.0.99</domain>
     </domain-config>
 </network-security-config>
