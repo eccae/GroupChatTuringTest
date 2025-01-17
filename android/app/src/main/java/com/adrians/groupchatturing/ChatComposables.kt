@@ -76,6 +76,7 @@ fun ChatMessages(
 ) {
     val listState = rememberLazyListState()
     val messagesList by viewModel.chatMessagesList.collectAsState()
+    val bubblesColorMap by viewModel.nickNameColorList.collectAsState()
     val hideKeyboardController = LocalSoftwareKeyboardController.current
     val msg = remember {
         mutableStateOf("")
@@ -101,7 +102,7 @@ fun ChatMessages(
         )
         {
             items(messagesList) { message ->
-                ChatBubble(message = message, activeUserId = activeUserId)
+                ChatBubble(message = message, activeUserId = activeUserId, bubblesColorMap = bubblesColorMap)
             }
         }
         Row(
@@ -135,13 +136,9 @@ fun ChatMessages(
 }
 
 @Composable
-fun ChatBubble(message: ChatMsg, activeUserId: Int) {
+fun ChatBubble(message: ChatMsg, activeUserId: Int, bubblesColorMap: Map<String, Color>) {
     val isCurrentUser = message.senderId == activeUserId
-    val bubbleColor = if (isCurrentUser) {
-        Color.Blue
-    } else {
-        Color.Gray
-    }
+    val bubbleColor = bubblesColorMap.getOrDefault(message.senderNickname, Color.Gray)
     Box(
         modifier = Modifier
             .fillMaxWidth()
