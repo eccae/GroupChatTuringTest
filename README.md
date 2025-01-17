@@ -86,5 +86,5 @@ If you find a bug, please open an issue [here](https://github.com/Eques72/GroupC
 
 If you'd like to request a new function, do so by opening an issue [here](https://github.com/Eques72/GroupChatTuringTest/issues/new).
 
-## [License](https://github.com/Eques72/GroupChatTuringTest/blob/main/LICENSE.md)
+## [License](https://github.com/Eques72/GroupChatTuringTest/blob/main/LICENSE
 MIT © [Eques72](https://github.com/Eques72),  [eccentricfae](https://github.com/eccentricfae)
