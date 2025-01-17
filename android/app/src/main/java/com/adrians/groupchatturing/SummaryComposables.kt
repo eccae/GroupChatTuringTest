@@ -8,8 +8,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -60,7 +58,7 @@ fun VotingTable(viewModel: MainViewModel)
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     var icon: ImageVector = Icons.Default.RadioButtonUnchecked
-                    var isActive: Boolean = true
+                    var isActive = true
                     if(votedUserNickname == user.nickName)
                     {
                         icon = Icons.Default.RadioButtonChecked
@@ -101,29 +99,7 @@ fun SummaryDialog(viewModel : MainViewModel)
     val botName by viewModel.currentBotNickname.collectAsState()
     val roomData by viewModel.roomData.collectAsState()
     val roundNum by viewModel.roundNumber.collectAsState()
-    Dialog(onDismissRequest = { }
-//        onDismissRequest = {  },
-//        title = { Text(text = "Vote Ended", modifier = Modifier.padding(8.dp)) },
-//        text = {
-//            Column(
-//                modifier = Modifier.fillMaxWidth(),
-//                verticalArrangement = Arrangement.spacedBy(8.dp)
-//            ) {
-//                Text(text = "The real impostor was: $botName", modifier = Modifier.padding(8.dp))
-//                scores.forEach { score ->
-//                    Row(
-//                        modifier = Modifier.fillMaxWidth(),
-//                        verticalAlignment = Alignment.CenterVertically,
-//                        horizontalArrangement = Arrangement.SpaceBetween
-//                    ) {
-//                        Text(text = "${score.username} : ${score.points}", fontSize = 18.sp, fontWeight = FontWeight.Thin)
-//                    }
-//                }
-//                Text(text = "Rounds left: ${(roomData["roundsNumber"]?:0) - roundNum}", modifier = Modifier.padding(8.dp))
-//            }
-//        },
-//        confirmButton = {}
-    )
+    Dialog(onDismissRequest = { })
     {
         Surface(
             shape = RoundedCornerShape(12.dp),
