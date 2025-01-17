@@ -6,7 +6,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -43,8 +45,8 @@ fun LobbyScreen(viewModel: MainViewModel)
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(8.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(
             text = "Lobby owned by: $userName",
@@ -53,22 +55,25 @@ fun LobbyScreen(viewModel: MainViewModel)
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
+        AddSpacers(0.dp)
         Text(
             text = "Join code: $lobbyId",
-            fontSize = 24.sp,
+            fontSize = 20.sp,
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .padding(6.dp)
         )
+        AddSpacers(0.dp)
         Text(
             text = "${userList.size} out of ${roomData["maxUsers"]} users.",
-            fontSize = 24.sp,
+            fontSize = 20.sp,
             textAlign = TextAlign.Center,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
+        AddSpacers(0.dp)
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -109,9 +114,10 @@ fun LobbyScreen(viewModel: MainViewModel)
                 modifier = Modifier.align(Alignment.CenterHorizontally)
             )
         }
-            Button(onClick = { if(!startClicked) {viewModel.startGame(); startClicked = true } }, enabled = (isLobbyOwner && !startClicked) ) {
-                Text(text = "Start Game ")
-                Icon(imageVector = Icons.Default.ChatBubble, contentDescription = null)
-            }
+        Button(onClick = { if(!startClicked) {viewModel.startGame(); startClicked = true } }, enabled = (isLobbyOwner && !startClicked),
+                modifier = Modifier.width(200.dp).height(80.dp)) {
+            Text(text = "Start Game ")
+            Icon(imageVector = Icons.Default.ChatBubble, contentDescription = null)
+        }
     }
 }

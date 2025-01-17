@@ -8,7 +8,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -50,6 +49,7 @@ fun VotingTable(viewModel: MainViewModel)
             fontWeight = FontWeight.Normal,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
+        AddSpacers(1.dp)
         userList.forEach { user ->
             if (user.userId != viewModel.userId.collectAsState().value){
                 Row(
@@ -128,9 +128,7 @@ fun SummaryDialog(viewModel : MainViewModel)
                 ) {
                     Text(text = "The real impostor was: $botName", style = MaterialTheme.typography.bodyLarge, color = Color.White)
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                HorizontalDivider(thickness = 1.dp, color = Color.Gray)
-                Spacer(modifier = Modifier.height(8.dp))
+                AddSpacers()
                 scores.forEach { score ->
                     Box(
                         modifier = Modifier
@@ -141,9 +139,7 @@ fun SummaryDialog(viewModel : MainViewModel)
                         Text(text = "${score.username}'s score: ${score.points}", style = MaterialTheme.typography.bodyLarge, color = Color.White)
                     }
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                HorizontalDivider(color = Color.Gray, thickness = 1.dp)
-                Spacer(modifier = Modifier.height(8.dp))
+                AddSpacers()
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -154,5 +150,5 @@ fun SummaryDialog(viewModel : MainViewModel)
                 }
             }
         }
-        }
+    }
 }

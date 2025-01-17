@@ -33,22 +33,13 @@ import com.adrians.groupchatturing.ui.theme.GroupChatTuringTheme
 //import androidx.compose.ui.tooling.preview.Preview
 
 //MVVM
-
 class MainActivity : ComponentActivity() {
     private val mainViewModel by viewModels<MainViewModel>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            GroupChatTuringTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    MainView(mainViewModel)
-                }
-            }
+            MainView(mainViewModel)
         }
     }
 }
@@ -64,33 +55,41 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainView(mainViewModel: MainViewModel) {
     val state by mainViewModel.uiState.collectAsState()
-
+    var isDarkTheme by remember { mutableStateOf(true) }
     val isDebugOn = false
-    var isDebugViewsOn by remember { mutableStateOf(false) }
+    GroupChatTuringTheme(darkTheme = isDarkTheme) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background) {
+            when (state) {
+                0 -> {
+                    MenuScreen(mainViewModel, isDarkTheme) { isDarkTheme = !isDarkTheme }
+                }
 
-    when (state) {
-        0 -> {
-            MenuScreen(mainViewModel)
-        }
-        1 -> {
-            GroupChatTuringTheme {
-                LobbyScreen(mainViewModel)
-            }
-        }
-        2 -> {
-            GroupChatTuringTheme {
-                Box(modifier = Modifier.fillMaxSize())
-                {
-                    ChatScreen(mainViewModel)
+                1 -> {
+                    LobbyScreen(mainViewModel)
+                }
+
+                2 -> {
+                    Box(modifier = Modifier.fillMaxSize())
+                    {
+                        ChatScreen(mainViewModel)
+                    }
+                }
+
+                3 -> {
+                    VotingTable(mainViewModel)
                 }
             }
-        }
-        3 -> {
-            GroupChatTuringTheme {
-                VotingTable(mainViewModel)
-            }
+            DebugButtonForceChangeViews(mainViewModel, isDebugOn)
         }
     }
+}
+
+@Composable
+fun DebugButtonForceChangeViews(mainViewModel: MainViewModel, isDebugOn: Boolean)
+{
+    var isDebugViewsOn by remember { mutableStateOf(false) }
     Box {
         if (isDebugOn && !isDebugViewsOn) {
             FloatingActionButton(

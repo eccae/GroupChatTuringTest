@@ -18,8 +18,11 @@ import androidx.compose.material.icons.filled.DoubleArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
@@ -41,15 +44,15 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.adrians.groupchatturing.ui.theme.GroupChatTuringTheme
 
 @Composable
-fun MenuScreen(mainViewModel: MainViewModel)
+fun MenuScreen(mainViewModel: MainViewModel, isDarkTheme: Boolean, onThemeChange: () -> Unit,)
 {
-    GroupChatTuringTheme {
         Box(modifier = Modifier.fillMaxSize()) {
             SettingsButton(
                 mainViewModel,
+                isDarkTheme,
+                onThemeChange,
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(10.dp)
@@ -61,11 +64,10 @@ fun MenuScreen(mainViewModel: MainViewModel)
             )
             {
                 Text(
-                    text = "Turing Test\nbut in\nGroup Chat!",
+                    text = "\nTuring Test\nbut in\nGroup Chat!\n",
                     textAlign = TextAlign.Center,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFBFBFBF),
                     lineHeight = 36.sp,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -77,7 +79,6 @@ fun MenuScreen(mainViewModel: MainViewModel)
                 JoinByCodeButton(mainViewModel = mainViewModel)
             }
         }
-    }
 }
 @Composable
 fun JoinByCodeButton(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
@@ -129,7 +130,7 @@ fun JoinInputDialog(
             }
         },
         dismissButton = {
-            Button(onClick = { onDismiss() }) {
+            Button(onClick = { onDismiss() }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
                 Text(text = "Cancel")
             }
         }
@@ -158,7 +159,7 @@ fun CreateRoomButton(mainViewModel: MainViewModel, modifier: Modifier = Modifier
 }
 
 @Composable
-fun SettingsButton(mainViewModel: MainViewModel, modifier: Modifier = Modifier) {
+fun SettingsButton(mainViewModel: MainViewModel, isDarkTheme: Boolean, onThemeChange: () -> Unit, modifier: Modifier = Modifier) {
     var showDialog by remember { mutableStateOf(false) }
     val userName by mainViewModel.userName.collectAsState()
     val port by mainViewModel.serverPortV2R.collectAsState()
@@ -173,7 +174,8 @@ fun SettingsButton(mainViewModel: MainViewModel, modifier: Modifier = Modifier) 
     if (showDialog)
     {
         SettingsDialog(
-            username = userName, ip = ip, port = port, prefix = prefix,
+            username = userName, ip = ip, port = port, prefix = prefix, isDarkTheme = isDarkTheme,
+            onThemeChange = onThemeChange,
             onDismiss = { showDialog = false },
             onConfirm = { name, _port, _ip, _prefix ->
                 showDialog = false
@@ -225,7 +227,7 @@ fun CreateRoomDialog(
             }
         },
         dismissButton = {
-            Button(onClick = { onDismiss() }) {
+            Button(onClick = { onDismiss() }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
                 Text(text = "Cancel")
             }
         }
@@ -233,12 +235,20 @@ fun CreateRoomDialog(
 }
 
 @Composable
-fun SettingsDialog(username: String, ip: String, port: String, prefix: String, onDismiss: () -> Unit, onConfirm: (String, String, String, String) -> Unit) {
+fun SettingsDialog(username: String,
+                   ip: String,
+                   port: String,
+                   prefix: String,
+                   isDarkTheme: Boolean,
+                   onThemeChange: () -> Unit,
+                   onDismiss: () -> Unit,
+                   onConfirm: (String, String, String, String) -> Unit) {
     var newUsername by remember { mutableStateOf(username) }
     var newPort by remember { mutableStateOf(port) }
     var newIpAddress by remember { mutableStateOf(ip) }
-    var radioOption by remember { mutableStateOf(prefix) }
-    val options = listOf("ws://", "wss://", "http://", "https://", "")
+    var prefixRadioOption by remember { mutableStateOf(prefix) }
+    val prefixOptions = listOf("ws://", "wss://", "http://", "https://", "")
+    var themeRadioOption by remember { mutableStateOf(if (isDarkTheme) "Dark" else "Light") }
 
     AlertDialog(
         onDismissRequest = { onDismiss() },
@@ -275,14 +285,35 @@ fun SettingsDialog(username: String, ip: String, port: String, prefix: String, o
                         .padding(4.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    options.forEach { option ->
+                    prefixOptions.forEach { option ->
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             RadioButton(
-                                selected = (radioOption == option),
-                                onClick = { radioOption = option }
+                                selected = (prefixRadioOption == option),
+                                onClick = { prefixRadioOption = option }
                             )
                             Text(text = option)
                         }
+                    }
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(4.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        RadioButton(
+                            selected = (themeRadioOption == "Light"),
+                            onClick = { themeRadioOption = "Light"; onThemeChange() }
+                        )
+                        Text(text = "Light")
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        RadioButton(
+                            selected = (themeRadioOption == "Dark"),
+                            onClick = { themeRadioOption = "Dark"; onThemeChange() }
+                        )
+                        Text(text = "Dark")
                     }
                 }
             }
@@ -290,7 +321,7 @@ fun SettingsDialog(username: String, ip: String, port: String, prefix: String, o
         confirmButton = {
             Button(onClick = {
                 if (newUsername.isNotBlank() && newPort.isNotBlank() && newIpAddress.isNotBlank()) {
-                    onConfirm(newUsername, newPort, newIpAddress, radioOption)
+                    onConfirm(newUsername, newPort, newIpAddress, prefixRadioOption)
                 } else {
                     println("Invalid input")
                 }
@@ -299,7 +330,7 @@ fun SettingsDialog(username: String, ip: String, port: String, prefix: String, o
             }
         },
         dismissButton = {
-            Button(onClick = { onDismiss() }) {
+            Button(onClick = { onDismiss() }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
                 Text("Cancel")
             }
         }
@@ -317,7 +348,7 @@ fun ErrorDialog(
             Text(text = "An error has occurred")
         },
         text = {
-            Text(msg, style = TextStyle(color = Color.White))//MaterialTheme.typography.bodyMedium,)
+            Text(msg)
         },
         confirmButton = {
             Button(onClick = { onDismiss() }) {

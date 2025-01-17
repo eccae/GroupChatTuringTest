@@ -16,32 +16,40 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = primary,
+    secondary = secondary,
+    tertiary = tertiary,
+    background = background,
+    surface = surface,
+    onPrimary = onPrimary,
+    onSecondary = onSecondary,
+    onTertiary = onTertiary,
+    onBackground = onBackground,
+    onSurface = onSurface,
+    primaryContainer = surface,
+    error = error
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    primary = w_primary,
+    secondary = w_secondary,
+    tertiary = w_tertiary,
+    background = w_background,
+    surface = w_surface,
+    onPrimary = w_onPrimary,
+    onSecondary = w_onSecondary,
+    onTertiary = w_onTertiary,
+    onBackground = w_onBackground,
+    onSurface = w_onSurface,
+    primaryContainer = w_secondary,
+    error = error
 )
 
 @Composable
 fun GroupChatTuringTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

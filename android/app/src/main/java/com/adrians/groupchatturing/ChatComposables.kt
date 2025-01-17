@@ -57,6 +57,7 @@ fun ChatScreen(viewModel: MainViewModel) {
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Normal,
                 modifier = Modifier.align(Alignment.CenterHorizontally))
+            AddSpacers(1.dp)
             ChatMessages(
                 viewModel = viewModel,
                 activeUserId = viewModel.userId.collectAsState().value,
