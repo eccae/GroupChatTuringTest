@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun MenuScreen(mainViewModel: MainViewModel, isDarkTheme: Boolean, onThemeChange: () -> Unit,)
+fun MenuScreen(mainViewModel: MainViewModel, isDarkTheme: Boolean, onThemeChange: () -> Unit)
 {
         Box(modifier = Modifier.fillMaxSize()) {
             SettingsButton(
@@ -80,7 +80,7 @@ fun MenuScreen(mainViewModel: MainViewModel, isDarkTheme: Boolean, onThemeChange
         }
 }
 @Composable
-fun JoinByCodeButton(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
+fun JoinByCodeButton(mainViewModel: MainViewModel) {
     var showDialog by remember { mutableStateOf(false) }
     Button(onClick = { showDialog = true },
         modifier = Modifier.padding(vertical = 20.dp)) {
@@ -137,7 +137,7 @@ fun JoinInputDialog(
 }
 
 @Composable
-fun CreateRoomButton(mainViewModel: MainViewModel, modifier: Modifier = Modifier) {
+fun CreateRoomButton(mainViewModel: MainViewModel) {
     var showCreateRoomDialog by remember { mutableStateOf(false) }
     Button(onClick = {showCreateRoomDialog=true},
         modifier = Modifier.padding(vertical = 20.dp))
