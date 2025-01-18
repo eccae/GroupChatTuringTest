@@ -57,8 +57,11 @@ API_KEY="<Your Developer Key to Gemini API>"
 ## Build and run with docker
 `docker compose up --build` 
 
-## Run local build
-bash buildDebug.sh
+## Run local build - Release
+```bash build.sh```
+
+## Run local build - Debug
+```bash buildDebug.sh```
 
 ## Tips for running on Linux VM
 - Enable Bridge Adapter in Network settings (NAT is also doable)
