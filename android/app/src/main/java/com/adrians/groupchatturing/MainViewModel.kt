@@ -1,6 +1,7 @@
 package com.adrians.groupchatturing
 
 import android.util.Log
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
@@ -57,6 +58,9 @@ class MainViewModel : ViewModel() {
     val anonUserList: StateFlow<Set<AnonUser>> get() = _anonUserList
     private val _gameTopic = MutableStateFlow("")
     val gameTopic = _gameTopic.asStateFlow()
+
+    private val _nickNameColorList = MutableStateFlow<Map<String, Color>>(emptyMap())
+    val nickNameColorList: StateFlow<Map<String, Color>> get() = _nickNameColorList
 
     private val _roundNumber = MutableStateFlow(0)
     val roundNumber = _roundNumber.asStateFlow()
@@ -126,10 +130,7 @@ class MainViewModel : ViewModel() {
         when (event) {
             is RepoEvent.ErrorOccurred -> {
                 Log.d(TAG, "ERROR occurred ${event.data ?: ""}")
-                if (event.data == "CRITICAL")
-                {
                     _uiState.update{0}
-                }
             }
             is RepoEvent.UserRegistered -> {
                 Log.d(TAG, "User Registered")
@@ -174,6 +175,7 @@ class MainViewModel : ViewModel() {
                 _chatMessagesList.update { emptyList() }
                 _uiState.update{2}
                 _roundNumber.update { repository.getRoundNum }
+                _nickNameColorList.value = repository.getNicknameColorsDisc
                 startCountingCoroutine(_roundDurationSec)
             }
             is RepoEvent.NewUserJoined -> {
@@ -188,6 +190,7 @@ class MainViewModel : ViewModel() {
                 _scoreboardList.update { emptyList() }
                 scores.forEach { score ->  addItemToScoresList(score)}
                 _uiScoreboardState.update { true }
+                _nickNameColorList.update { emptyMap() }
                 _currentBotNickname.update{repository.getCurrentBotNickname}
             }
             is RepoEvent.TimeToVote -> {

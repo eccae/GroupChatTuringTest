@@ -57,6 +57,7 @@ fun ChatScreen(viewModel: MainViewModel) {
                 textAlign = TextAlign.Center,
                 fontWeight = FontWeight.Normal,
                 modifier = Modifier.align(Alignment.CenterHorizontally))
+            AddSpacers(1.dp)
             ChatMessages(
                 viewModel = viewModel,
                 activeUserId = viewModel.userId.collectAsState().value,
@@ -76,6 +77,7 @@ fun ChatMessages(
 ) {
     val listState = rememberLazyListState()
     val messagesList by viewModel.chatMessagesList.collectAsState()
+    val bubblesColorMap by viewModel.nickNameColorList.collectAsState()
     val hideKeyboardController = LocalSoftwareKeyboardController.current
     val msg = remember {
         mutableStateOf("")
@@ -101,7 +103,7 @@ fun ChatMessages(
         )
         {
             items(messagesList) { message ->
-                ChatBubble(message = message, activeUserId = activeUserId)
+                ChatBubble(message = message, activeUserId = activeUserId, bubblesColorMap = bubblesColorMap)
             }
         }
         Row(
@@ -110,7 +112,6 @@ fun ChatMessages(
                     bottom.linkTo(parent.bottom) // Pin to the bottom
                 }
                 .fillMaxWidth()
-                .background(Color.LightGray)
                 .padding(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ){
@@ -135,13 +136,9 @@ fun ChatMessages(
 }
 
 @Composable
-fun ChatBubble(message: ChatMsg, activeUserId: Int) {
+fun ChatBubble(message: ChatMsg, activeUserId: Int, bubblesColorMap: Map<String, Color>) {
     val isCurrentUser = message.senderId == activeUserId
-    val bubbleColor = if (isCurrentUser) {
-        Color.Blue
-    } else {
-        Color.Gray
-    }
+    val bubbleColor = bubblesColorMap.getOrDefault(message.senderNickname, Color.Gray)
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -154,8 +151,7 @@ fun ChatBubble(message: ChatMsg, activeUserId: Int) {
             modifier = Modifier.align(alignment)
         ) {
             Text(
-                text = message.senderNickname,  fontSize = 10.sp,
-                color = Color.White, modifier = Modifier.padding(0.dp)
+                text = message.senderNickname,  fontSize = 10.sp, modifier = Modifier.padding(0.dp)
             )
             Box(
                 modifier = Modifier

@@ -1,6 +1,7 @@
 package com.adrians.groupchatturing
 
 import android.util.Log
+import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -87,6 +88,12 @@ class Repository {
     }
     val getAnonUserList: MutableList<AnonUser>
         get() = anonUserList
+    private val nicknameColorsDict: MutableMap<String, Color> by lazy {
+        mutableMapOf()
+    }
+    val getNicknameColorsDisc: MutableMap<String, Color>
+        get() = nicknameColorsDict
+
     private var isHost = false
     val getIsHost: Boolean
         get() = isHost
@@ -189,7 +196,7 @@ class Repository {
         //Error
         webSocketManager.registerEventListener(-1) { json ->
             Log.d(TAG, "ERROR: Handling event_-1: $json")
-            CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.ErrorOccurred("CRITICAL"))}
+            CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.ErrorOccurred(json.get("errorCode").asInt.toString()))}
         }
 
         //Register client resp - Has two routes (depends if is host [set locally])
@@ -240,9 +247,6 @@ class Repository {
         //Game started
         webSocketManager.registerEventListener(8) { json ->
             Log.d(TAG,"Handling event_8: $json")
-//            topic = json.get("topic").asString
-//            roundDurationSec = json.get("roundDurationSec").asInt
-//            roundNum = json.get("roundNum").asInt
             CoroutineScope(Dispatchers.IO).launch{ _events.emit(RepoEvent.GameStarted) }
         }
 
@@ -254,6 +258,13 @@ class Repository {
                 topic = json.get("topic").asString
                 roundDurationSec = json.get("roundDurationSec").asInt
                 roundNum = json.get("roundNum").asInt
+                nicknameColorsDict.clear()
+                for ((key, value) in json.getAsJsonObject("nicknameColors").entrySet()) {
+                    var validHex = if (value.asString.startsWith("#")) value.asString else "#$value.asString"
+                    validHex = validHex.replace("\r", "")
+                    Log.d(TAG,"Color: $validHex")
+                    nicknameColorsDict[key] = Color(android.graphics.Color.parseColor(validHex))
+                }
                 CoroutineScope(Dispatchers.IO).launch { _events.emit(RepoEvent.NewRound) }
             }
         }

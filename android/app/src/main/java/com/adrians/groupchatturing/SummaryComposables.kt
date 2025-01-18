@@ -1,14 +1,17 @@
 package com.adrians.groupchatturing
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,6 +20,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 
 @Composable
 fun VotingTable(viewModel: MainViewModel)
@@ -44,6 +48,7 @@ fun VotingTable(viewModel: MainViewModel)
             fontWeight = FontWeight.Normal,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
+        AddSpacers(1.dp)
         userList.forEach { user ->
             if (user.userId != viewModel.userId.collectAsState().value){
                 Row(
@@ -52,7 +57,7 @@ fun VotingTable(viewModel: MainViewModel)
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     var icon: ImageVector = Icons.Default.RadioButtonUnchecked
-                    var isActive: Boolean = true
+                    var isActive = true
                     if(votedUserNickname == user.nickName)
                     {
                         icon = Icons.Default.RadioButtonChecked
@@ -93,27 +98,55 @@ fun SummaryDialog(viewModel : MainViewModel)
     val botName by viewModel.currentBotNickname.collectAsState()
     val roomData by viewModel.roomData.collectAsState()
     val roundNum by viewModel.roundNumber.collectAsState()
-    AlertDialog(
-        onDismissRequest = {  },
-        title = { Text(text = "Vote Ended", modifier = Modifier.padding(8.dp)) },
-        text = {
+    Dialog(onDismissRequest = { })
+    {
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            shadowElevation = 8.dp,
+            modifier = Modifier.padding(16.dp)
+        ) {
             Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
             ) {
-                Text(text = "The real impostor was: $botName", modifier = Modifier.padding(8.dp))
+                Text(
+                    text = "Vote Ended",
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(bottom = 16.dp)
+                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(color = MaterialTheme.colorScheme.background,
+                            shape = RoundedCornerShape(8.dp))
+                        .padding(16.dp)
+                ) {
+                    Text(text = "The real impostor was: $botName", style = MaterialTheme.typography.bodyLarge)
+                }
+                AddSpacers()
                 scores.forEach { score ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(8.dp))
+                            .padding(16.dp)
                     ) {
-                        Text(text = "${score.username} : ${score.points}", fontSize = 18.sp, fontWeight = FontWeight.Thin)
+                        Text(text = "${score.username}'s score: ${score.points}", style = MaterialTheme.typography.bodyLarge)
                     }
                 }
-                Text(text = "Rounds left: ${(roomData["roundsNumber"]?:0) - roundNum}", modifier = Modifier.padding(8.dp))
+                AddSpacers()
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(8.dp))
+                        .padding(16.dp)
+                ) {
+                    Text(text = "Rounds left: ${(roomData["roundsNumber"]?:0) - roundNum}", style = MaterialTheme.typography.bodyLarge)
+                }
             }
-        },
-        confirmButton = {}
-    )
+        }
+    }
 }
