@@ -15,15 +15,15 @@ Chat with :blond_haired_man: other people and a :robot: bot, discover who is the
 #### Permissions
 App needs `INTERNET` permission. 
 #### Android version
-> TBD
+Minimum required version: Android 10 (SDK Level 29).
 #### Data collection and data usage
 This app does not collect or store any user data.
 ### Developer
 #### Setup
 > By default network security is off, in case of use outside local environment follow those steps:
-- In [Android manifest]() replace line `android:usesCleartextTraffic="true"`  with `android:networkSecurityConfig="@xml/network_security_config"`
-- In [Network security config]() remove all occurrences  of `<domain-config cleartextTrafficPermitted="true">` and add your domains.
-- In [Repository.kt]() you may wish to hardcode variables: `serverPort`,`serverIp`,`serverPrefix` and remove option to change them by disabling part of Settings in [MenuComposables.kt]()
+- In [Android manifest](https://github.com/Eques72/GroupChatTuringTest/blob/main/android/app/src/main/AndroidManifest.xml) replace line `android:usesCleartextTraffic="true"`  with `android:networkSecurityConfig="@xml/network_security_config"`
+- In [Network security config](https://github.com/Eques72/GroupChatTuringTest/blob/main/android/app/src/main/res/xml/network_security_config.xml) remove all occurrences  of `<domain-config cleartextTrafficPermitted="true">` and add your domains.
+- In [Repository.kt](https://github.com/Eques72/GroupChatTuringTest/blob/main/android/app/src/main/java/com/adrians/groupchatturing/Repository.kt) you may wish to hardcode variables: `serverPort`,`serverIp`,`serverPrefix` and remove option to change them by disabling part of Settings in [MenuComposables.kt]()
 #### Debug logs
 Default log tag in application is: MyLogTag
 
@@ -31,7 +31,7 @@ Default log tag in application is: MyLogTag
 ### User
 #### Setup
 - In your android device settings enable installation from unknown sources `"Install unknown apps"`.
-- ~~Download .apk file from [no-link]() to your android device and click on it, installation should begin. After it is completed, GTCC app should appear in app list on your device.~~
+- Download .apk file from [here](https://github.com/Eques72/GroupChatTuringTest/releases) to your android device and click on it, installation should begin. After it is completed, GTCC app should appear in app list on your device.
 #### Usage 
 1. In Main Menu, user has three possible activities. 
    - :gear: button that opens Settings pop up, where one can set up its username and IP address of the server together with opened port.
@@ -40,6 +40,7 @@ Default log tag in application is: MyLogTag
 2. To use application further, follow the UI
 3. If you are returned to a Main Menu, it means that either game session has finished or an error occurred and you have been disconnected.
 
+---
 
 ## Server
 ### Usage
@@ -50,20 +51,8 @@ API_KEY="<Your Developer Key to Gemini API>"
 ```
 [API Keys for Gemini can be obtained here](https://ai.google.dev/)
 
-
-
-### The server is set to run on port: 12345 (it is hardcoded for now)
-
-### Game simulation
-> You can find the JavaScript scripts in the "test" directory
-
-1. fire up the server
-2. launch the lobby_creator.js script in a console on the same pc as the server
-<br>2.1 Copy the lobbyId from the message received from the server
-3. launch the lobby_user.js script in a *different* console on the same pc as the server
-<br>3.1 paste the lobbyId code when asked by the console and hit Enter
-4. Repeat the step 3. for however many users you want to simulate
-5. Watch the game go on
+### The server is set to run on port: 
+> 12345
 
 ## Build and run with docker
 `docker compose up --build` 
@@ -86,5 +75,5 @@ If you find a bug, please open an issue [here](https://github.com/Eques72/GroupC
 
 If you'd like to request a new function, do so by opening an issue [here](https://github.com/Eques72/GroupChatTuringTest/issues/new).
 
-## [License](https://github.com/Eques72/GroupChatTuringTest/blob/main/LICENSE
+## [License](https://github.com/Eques72/GroupChatTuringTest/blob/main/LICENSE)
 MIT © [Eques72](https://github.com/Eques72),  [eccentricfae](https://github.com/eccentricfae)
