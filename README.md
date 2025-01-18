@@ -58,9 +58,15 @@ API_KEY="<Your Developer Key to Gemini API>"
 `docker compose up --build` 
 
 ## Run local build - Release
+> [!NOTE]  
+> Prefer to build the server with docker over local
+
 ```bash build.sh```
 
 ## Run local build - Debug
+> [!NOTE]  
+> Prefer to build the server with docker over local
+
 ```bash buildDebug.sh```
 
 ## Tips for running on Linux VM
