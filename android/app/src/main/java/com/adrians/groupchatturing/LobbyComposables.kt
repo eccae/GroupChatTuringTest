@@ -97,7 +97,6 @@ fun LobbyScreen(viewModel: MainViewModel)
                         Text(
                             text = user,
                             fontSize = 22.sp,
-                            color = Color.White,
                             modifier = Modifier.align(Alignment.CenterStart)
                         )
                     }

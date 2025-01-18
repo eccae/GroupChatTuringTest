@@ -16,7 +16,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -103,7 +102,6 @@ fun SummaryDialog(viewModel : MainViewModel)
     {
         Surface(
             shape = RoundedCornerShape(12.dp),
-            color = Color(0xFF35374B),
             shadowElevation = 8.dp,
             modifier = Modifier.padding(16.dp)
         ) {
@@ -115,7 +113,6 @@ fun SummaryDialog(viewModel : MainViewModel)
                 Text(
                     text = "Vote Ended",
                     style = MaterialTheme.typography.headlineMedium,
-                    color = Color.White,
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .padding(bottom = 16.dp)
@@ -123,30 +120,31 @@ fun SummaryDialog(viewModel : MainViewModel)
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(color = Color(0xFF344955), shape = RoundedCornerShape(8.dp))
+                        .background(color = MaterialTheme.colorScheme.background,
+                            shape = RoundedCornerShape(8.dp))
                         .padding(16.dp)
                 ) {
-                    Text(text = "The real impostor was: $botName", style = MaterialTheme.typography.bodyLarge, color = Color.White)
+                    Text(text = "The real impostor was: $botName", style = MaterialTheme.typography.bodyLarge)
                 }
                 AddSpacers()
                 scores.forEach { score ->
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(color = Color(0xFF344955), shape = RoundedCornerShape(8.dp))
+                            .background(color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(8.dp))
                             .padding(16.dp)
                     ) {
-                        Text(text = "${score.username}'s score: ${score.points}", style = MaterialTheme.typography.bodyLarge, color = Color.White)
+                        Text(text = "${score.username}'s score: ${score.points}", style = MaterialTheme.typography.bodyLarge)
                     }
                 }
                 AddSpacers()
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(color = Color(0xFF344955), shape = RoundedCornerShape(8.dp))
+                        .background(color = MaterialTheme.colorScheme.background, shape = RoundedCornerShape(8.dp))
                         .padding(16.dp)
                 ) {
-                    Text(text = "Rounds left: ${(roomData["roundsNumber"]?:0) - roundNum}", style = MaterialTheme.typography.bodyLarge, color = Color.White)
+                    Text(text = "Rounds left: ${(roomData["roundsNumber"]?:0) - roundNum}", style = MaterialTheme.typography.bodyLarge)
                 }
             }
         }

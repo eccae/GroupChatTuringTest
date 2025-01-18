@@ -18,7 +18,6 @@ import androidx.compose.material.icons.filled.DoubleArrow
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -37,8 +36,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -261,12 +258,14 @@ fun SettingsDialog(username: String,
                     value = newUsername,
                     onValueChange = { newUsername = it },
                     label = { Text("Username") },
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = newPort,
                     onValueChange = { newPort = it },
+                    singleLine = true,
                     label = { Text("Port") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth()
@@ -274,6 +273,7 @@ fun SettingsDialog(username: String,
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = newIpAddress,
+                    singleLine = true,
                     onValueChange = { newIpAddress = it },
                     label = { Text("IP Address") },
                     modifier = Modifier.fillMaxWidth()
@@ -332,32 +332,6 @@ fun SettingsDialog(username: String,
         dismissButton = {
             Button(onClick = { onDismiss() }, colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
                 Text("Cancel")
-            }
-        }
-    )
-}
-
-@Composable
-fun ErrorDialog(
-    onDismiss: () -> Unit,
-    msg: String
-) {
-    AlertDialog(
-        onDismissRequest = { onDismiss() },
-        title = {
-            Text(text = "An error has occurred")
-        },
-        text = {
-            Text(msg)
-        },
-        confirmButton = {
-            Button(onClick = { onDismiss() }) {
-                Text(text = "I understood")
-            }
-        },
-        dismissButton = {
-            Button(onClick = { onDismiss() }) {
-                Text(text = "I did not understood")
             }
         }
     )

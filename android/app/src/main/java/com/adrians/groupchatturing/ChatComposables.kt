@@ -112,7 +112,6 @@ fun ChatMessages(
                     bottom.linkTo(parent.bottom) // Pin to the bottom
                 }
                 .fillMaxWidth()
-                .background(Color.LightGray)
                 .padding(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ){
@@ -152,8 +151,7 @@ fun ChatBubble(message: ChatMsg, activeUserId: Int, bubblesColorMap: Map<String,
             modifier = Modifier.align(alignment)
         ) {
             Text(
-                text = message.senderNickname,  fontSize = 10.sp,
-                color = Color.White, modifier = Modifier.padding(0.dp)
+                text = message.senderNickname,  fontSize = 10.sp, modifier = Modifier.padding(0.dp)
             )
             Box(
                 modifier = Modifier
