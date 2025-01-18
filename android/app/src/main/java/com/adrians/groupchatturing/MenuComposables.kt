@@ -1,5 +1,6 @@
 package com.adrians.groupchatturing
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -71,6 +72,7 @@ fun MenuScreen(mainViewModel: MainViewModel, isDarkTheme: Boolean, onThemeChange
                         .padding(26.dp)
                         .wrapContentHeight(align = Alignment.CenterVertically)
                         .shadow(4.dp, shape = RoundedCornerShape(8.dp))
+                        .background(color = MaterialTheme.colorScheme.surface),
                 )
                 CreateRoomButton(mainViewModel = mainViewModel)
                 JoinByCodeButton(mainViewModel = mainViewModel)
