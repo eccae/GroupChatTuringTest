@@ -54,8 +54,8 @@ class MainViewModel : ViewModel() {
 
     private val _currentBotNickname = MutableStateFlow("")
     val currentBotNickname = _currentBotNickname.asStateFlow()
-    private val _anonUserList = MutableStateFlow<Set<AnonUser>>(emptySet())
-    val anonUserList: StateFlow<Set<AnonUser>> get() = _anonUserList
+    private val _anonUserSet = MutableStateFlow<Set<AnonUser>>(emptySet())
+    val anonUserSet: StateFlow<Set<AnonUser>> get() = _anonUserSet
     private val _gameTopic = MutableStateFlow("")
     val gameTopic = _gameTopic.asStateFlow()
 
@@ -84,35 +84,11 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    private fun addItemToScoresList(item: UserScore) {
+    private fun addElementToAnonSet(anon: AnonUser) {
         viewModelScope.launch {
-            val updatedList = _scoreboardList.value.toMutableList()
-            updatedList.add(item)
-            _scoreboardList.emit(updatedList)
-        }
-    }
-
-    private fun addItemToLobbyUserList(item: String) {
-        viewModelScope.launch {
-            val updatedList = _lobbyUserList.value.toMutableList()
-            updatedList.add(item)
-            _lobbyUserList.emit(updatedList)
-        }
-    }
-
-    private fun addItemToChatMessagesList(item: ChatMsg) {
-        viewModelScope.launch {
-            val updatedList = _chatMessagesList.value.toMutableList()
-            updatedList.add(item)
-            _chatMessagesList.emit(updatedList)
-        }
-    }
-
-    private fun addItemToAnonsList(anon: AnonUser) {
-        viewModelScope.launch {
-            val updatedList = _anonUserList.value.toMutableSet()
-            updatedList.add(anon)
-            _anonUserList.emit(updatedList)
+            val updatedSet = _anonUserSet.value.toMutableSet()
+            updatedSet.add(anon)
+            _anonUserSet.emit(updatedSet)
         }
     }
 
@@ -142,7 +118,9 @@ class MainViewModel : ViewModel() {
                 _uiState.update{1}
                 _isHost.update{repository.getIsHost}
                 _lobbyUserList.update { emptyList() }
-                addItemToLobbyUserList(userName.value)
+                viewModelScope.launch {
+                    _lobbyUserList.emit(listOf(userName.value))
+                }
             }
             is RepoEvent.GameStarted -> {
                 Log.d(TAG, "Game started")
@@ -157,15 +135,20 @@ class MainViewModel : ViewModel() {
                 _uiState.update{1}
                 _isHost.update{repository.getIsHost}
                 _roomData.update { repository.getRoomData }
-                val allUsers = repository.getUserList
                 _lobbyUserList.update { emptyList() }
-                allUsers.forEach { user ->  addItemToLobbyUserList(user)}
+                viewModelScope.launch {
+                    val updatedList = repository.getUserList.toList()
+                    _lobbyUserList.emit(updatedList)
+                }
             }
             is RepoEvent.NewChatMessage -> {
                 Log.d(TAG, "New chat message")
-                val allMessages = repository.getChatMessages
                 _chatMessagesList.update { emptyList() }
-                allMessages.forEach { msg ->  addItemToChatMessagesList(msg)}
+                //TODO - Would be nice to add messages one by one instead of slapping full list every time
+                viewModelScope.launch {
+                    val updatedList = repository.getChatMessages.toList()
+                    _chatMessagesList.emit(updatedList)
+                }
             }
             is RepoEvent.NewRound -> {
                 Log.d(TAG, "New Round")
@@ -182,13 +165,18 @@ class MainViewModel : ViewModel() {
                 Log.d(TAG, "New User")
                 val allUsers = repository.getUserList
                 _lobbyUserList.update { emptyList() }
-                allUsers.forEach { user ->  addItemToLobbyUserList(user)}
+                viewModelScope.launch {
+                    val updatedList = repository.getUserList.toList()
+                    _lobbyUserList.emit(updatedList)
+                }
             }
             is RepoEvent.RoundEnded -> {
                 Log.d(TAG, "End of round after vote, display scoreboard")
-                val scores = repository.getScoreboardList
                 _scoreboardList.update { emptyList() }
-                scores.forEach { score ->  addItemToScoresList(score)}
+                viewModelScope.launch {
+                    val updatedList = repository.getScoreboardList.toList()
+                    _scoreboardList.emit(updatedList)
+                }
                 _uiScoreboardState.update { true }
                 _nickNameColorList.update { emptyMap() }
                 _currentBotNickname.update{repository.getCurrentBotNickname}
@@ -196,7 +184,9 @@ class MainViewModel : ViewModel() {
             is RepoEvent.TimeToVote -> {
                 Log.d(TAG, "Chat ended, vote screen")
                 _votingTimeSec.update{repository.getVotingTimeSec}
-                repository.getAnonUserList.forEach {anon -> addItemToAnonsList(anon)}
+                _anonUserSet.update { emptySet() }
+                //TODO - If unexpected crashes occur, this may be the reason but this should never happen as it would require to two "Start Vote" messages arrive in short time.
+                repository.getAnonUserList.forEach {anon -> addElementToAnonSet(anon)}
                 _uiState.update{3}
                 startCountingCoroutine(_votingTimeSec)
             }
