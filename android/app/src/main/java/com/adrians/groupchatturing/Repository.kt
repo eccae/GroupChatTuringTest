@@ -192,6 +192,7 @@ class Repository {
         webSocketManager.sendMessage("""{"msgType": 16, "clientId": $userId, "lobbyId": $lobbyId}""")
     }
 
+    //TODO - Make sure that received messages, irrelevant for given context (not current lobby, different user-recipient), are disregarded
     private fun registerEvents() {
         //Error
         webSocketManager.registerEventListener(-1) { json ->
