@@ -3,10 +3,10 @@
 # Group Chat Turing Test
 
 Chat with :blond_haired_man: other people and a :robot: bot, discover who is the machine.
-
-
-
 ---
+<p align="center">
+  <img src="resources/showcase.gif" alt="gif goes here"/>
+</p>
 
 ## [Android Aplication](https://github.com/Eques72/GroupChatTuringTest/blob/main/android) :iphone:
 ### Usage
